@@ -7,12 +7,11 @@
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #fdf8f3; /* 米白 */
+      background-color: #fdf8f3;
       display: flex;
       justify-content: center;
       padding: 30px;
     }
-
     .container {
       background-color: #fffaf2;
       padding: 30px 25px;
@@ -20,22 +19,20 @@
       box-shadow: 0 0 12px rgba(0,0,0,0.05);
       width: 100%;
       max-width: 420px;
-    }
-
-    h2 {
       text-align: center;
-      color: #8b5e3c; /* 深咖啡色 */
+    }
+    h2 {
+      color: #8b5e3c;
       margin-bottom: 30px;
     }
-
     label {
       display: block;
       margin-top: 16px;
       margin-bottom: 6px;
       color: #5b3e2b;
       font-weight: bold;
+      text-align: left;
     }
-
     input, select {
       width: 100%;
       padding: 12px;
@@ -47,7 +44,6 @@
       border-radius: 6px;
       box-sizing: border-box;
     }
-
     button {
       width: 100%;
       padding: 14px;
@@ -60,25 +56,8 @@
       cursor: pointer;
       font-weight: bold;
     }
-
     button:hover {
       background-color: #b89275;
-    }
-
-    #result {
-      margin-top: 20px;
-      font-size: 14px;
-      background: #f7f3ee;
-      padding: 10px;
-      border: 1px solid #d7c7b8;
-      border-radius: 6px;
-      word-break: break-word;
-    }
-
-    #copyBtn {
-      display: none;
-      background-color: #9f826c;
-      margin-top: 10px;
     }
   </style>
 </head>
@@ -103,26 +82,12 @@
       <option value="2" selected>外帶</option>
     </select>
 
-    <button onclick="generateLink()">🎯 產生問卷連結</button>
-
-    <div id="result"></div>
-    <button id="copyBtn" onclick="copyLink()">📋 複製問卷連結</button>
+    <button onclick="generateAndCopy()">🎯 一鍵產生並複製問卷連結</button>
   </div>
 
   <script>
-    function generateLink() {
-      const store = document.getElementById('store').value.trim();
-      const o = document.getElementById('o').value;
-      const k = document.getElementById('k').value;
-
-      if (!store || store.length < 1 || store.length > 3) {
-        alert("請輸入正確門市代碼！");
-        return;
-      }
-
-      // 判斷 prefix
+    function generateSingleLink(store, o, k) {
       const prefix = store.startsWith('5') ? 'TWB' : 'TWI';
-
       const now = new Date();
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       const D = date.toISOString().slice(0, 10).replace(/-/g, '');
@@ -150,17 +115,25 @@
         .replace(/\//g, "_")
         .replace(/=+$/, "");
 
-      const link = `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${q_eed}`;
-
-      document.getElementById('result').innerHTML = `<strong>🔗 問卷連結：</strong><br><a href="${link}" target="_blank">${link}</a>`;
-      document.getElementById('copyBtn').style.display = 'block';
-      document.getElementById('copyBtn').setAttribute('data-link', link);
+      return `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${q_eed}`;
     }
 
-    function copyLink() {
-      const link = document.getElementById('copyBtn').getAttribute('data-link');
+    function generateAndCopy() {
+      const store = document.getElementById('store').value.trim().toUpperCase();
+      const o = document.getElementById('o').value;
+      const k = document.getElementById('k').value;
+
+      if (!store || store.length < 1 || store.length > 3) {
+        alert("❗請輸入正確門市代碼！");
+        return;
+      }
+
+      const link = generateSingleLink(store, o, k);
+
       navigator.clipboard.writeText(link).then(() => {
-        alert('✅ 問卷連結已複製到剪貼簿！');
+        alert('✅ 問卷連結已成功產生並複製到剪貼簿！');
+      }).catch(() => {
+        alert('⚠️ 無法複製到剪貼簿，請手動複製！');
       });
     }
   </script>
