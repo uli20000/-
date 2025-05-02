@@ -4,58 +4,61 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>問卷連結產生器</title>
-  <style>
-    body {
-      font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #fdf8f3; /* 奶茶底 */
-      display: flex;
-      justify-content: center;
-      padding: 30px;
-    }
+<style>
+  * {
+    font-family: "Microsoft JhengHei", sans-serif;
+  }
 
-    .container {
-      background-color: #fffaf2;
-      padding: 30px 25px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.05);
-      width: 100%;
-      max-width: 420px;
-    }
+  body {
+    background-color: #fdf8f3; /* 奶茶底 */
+    display: flex;
+    justify-content: center;
+    padding: 30px;
+  }
 
-    label {
-      display: block;
-      margin-top: 16px;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
+  .container {
+    background-color: #fffaf2;
+    padding: 30px 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 420px;
+  }
 
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
+  label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: bold;
+  }
 
-    button {
-      margin-top: 24px;
-      width: 100%;
-      padding: 10px;
-      background-color: #d9b99b;
-      color: white;
-      font-weight: bold;
-      font-size: 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+  input, select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
 
-    button:hover {
-      background-color: #caa882;
-    }
-  </style>
+  button {
+    margin-top: 24px;
+    width: 100%;
+    padding: 10px;
+    background-color: #d9b99b;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #caa882;
+  }
+</style>
 </head>
 <body>
   <div class="container">
@@ -66,9 +69,9 @@
 
     <label for="o">點餐方式</label>
     <select id="o">
-      <option value="2">網路訂餐</option>
+      <option value="2">網訂</option>
       <option value="3">點餐機</option>
-      <option value="4" selected>現場訂餐</option>
+      <option value="4" selected>現場</option>
     </select>
 
     <label for="m">用餐方式</label>
