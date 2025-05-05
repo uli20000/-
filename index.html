@@ -4,91 +4,111 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>問卷連結產生器</title>
-<style>
-  * {
-    font-family: "Microsoft JhengHei", sans-serif;
-  }
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #fdf8f3;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
 
-  body {
-    background-color: #fdf8f3; /* 奶茶底 */
-    display: flex;
-    justify-content: center;
-    padding: 30px;
-  }
+    .container {
+      background-color: #fffaf2;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
 
-  .container {
-    background-color: #fffaf2;
-    padding: 30px 25px;
-    border-radius: 12px;
-    box-shadow: 0 0 12px rgba(0,0,0,0.05);
-    width: 100%;
-    max-width: 420px;
-  }
+    h2 {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 24px;
+    }
 
-  label {
-    display: block;
-    margin-top: 16px;
-    margin-bottom: 6px;
-    font-weight: bold;
-  }
+    label {
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
 
-  input, select {
-    width: 100%;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    font-size: 16px;
-  }
+    input, select {
+      width: 200px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      text-align: center;
+      box-sizing: border-box;
+      font-family: "Microsoft JhengHei", sans-serif;
+      font-weight: bold;
+    }
 
-  button {
-    margin-top: 24px;
-    width: 100%;
-    padding: 10px;
-    background-color: #d9b99b;
-    color: white;
-    font-weight: bold;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 10px;
+      background-color: #d9b99b;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
 
-  button:hover {
-    background-color: #caa882;
-  }
-</style>
+    button:hover {
+      background-color: #caa882;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>問卷連結產生器</h2>
 
     <label for="store">門市代碼</label>
-    <input type="text" id="store" maxlength="3" placeholder="請輸入 3 碼門市代碼" value="" />
+    <input type="text" id="store" maxlength="3" placeholder="請輸入 3 碼門市代碼" value="226" />
 
-    <label for="o">點餐方式</label>
-    <select id="o">
-      <option value="2">網訂</option>
-      <option value="3">點餐機</option>
-      <option value="4" selected>現場</option>
-    </select>
-
-    <label for="m">用餐方式</label>
-    <select id="m">
+    <label for="meal">用餐方式</label>
+    <select id="meal" onchange="handleMealChange()">
       <option value="2">內用</option>
       <option value="4" selected>外帶</option>
+      <option value="1">外送</option>
+    </select>
+
+    <label for="order">點餐方式</label>
+    <select id="order">
+      <option value="2">櫃台</option>
+      <option value="3">點餐機</option>
+      <option value="4">網訂</option>
     </select>
 
     <button onclick="generateAndCopy()">🚀一鍵產生並複製問卷連結</button>
   </div>
 
   <script>
+    function handleMealChange() {
+      const meal = document.getElementById('meal').value;
+      const order = document.getElementById('order');
+      if (meal === '1') {
+        order.value = '4';
+        order.disabled = true;
+      } else {
+        order.disabled = false;
+      }
+    }
+
     function generateAndCopy() {
       const store = document.getElementById('store').value.trim();
-      const o = document.getElementById('o').value;
-      const m = document.getElementById('m').value;
-      const k = "2"; // 固定安全值
+      const m = document.getElementById('meal').value;
+      const o = document.getElementById('order').value;
+      const k = (m === '1') ? "1" : "2"; // 外送固定K=1，其餘K=2
+      const tail = (m === '1') ? "0004" : "0053";
 
       if (!store || store.length !== 3 || isNaN(store)) {
         alert("請輸入有效的 3 碼門市代碼");
@@ -99,14 +119,8 @@
       const now = new Date();
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       const d = date.toISOString().slice(0, 10).replace(/-/g, '');
-
-      const s = String(Math.floor(Math.random() * (22 - 10 + 1)) + 10).padStart(2, '0');
-      const rand1 = String(Math.floor(Math.random() * 90) + 10);
-      const rand2 = String(Math.floor(Math.random() * 50) + 10);
-      const rand3 = String(Math.floor(Math.random() * 89) + 11);
-      const u = `${prefix}${store}${d}${s}${rand1}${rand2}${rand3}`;
-
-      const t = `${s}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
+      const t = "133000";
+      const u = `${prefix}${store}${d}${t}${tail}`;
 
       const obj = {
         S: `886K${prefix}${store}`,
