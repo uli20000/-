@@ -1,84 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>小工具🛠️</title>
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #f9f3ec;
+      background-color: #fdf6ed;
+      color: #5a3e36;
       display: flex;
       justify-content: center;
-      padding: 50px 20px;
-    }
-
-    .container {
-      background-color: #fffaf3;
       padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    .container {
+      background-color: #fffaf4;
+      padding: 35px 25px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
       width: 100%;
       max-width: 480px;
       text-align: center;
     }
-
     h2 {
       font-size: 26px;
       font-weight: bold;
       margin-bottom: 25px;
-      color: #5c4033;
     }
-
     label {
       display: block;
-      margin-top: 20px;
+      margin-top: 16px;
+      margin-bottom: 8px;
       font-weight: bold;
-    }
-
-    input {
-      width: 70%;
-      padding: 10px;
-      margin-top: 8px;
       font-size: 18px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      text-align: center;
-      font-weight: bold;
     }
-
+    input {
+      width: 85%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      text-align: center;
+    }
     .button-group {
       display: flex;
       justify-content: center;
-      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 10px;
+      gap: 12px;
+      margin: 10px 0;
     }
-
     .button-group button {
+      background-color: #eddcc7;
+      border: none;
       padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      background-color: #e3c9a9;
       font-weight: bold;
+      font-size: 16px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      color: #3d2b1f;
     }
-
     .button-group button.active {
-      background-color: #a47551;
+      background-color: #d9b99b;
       color: white;
     }
-
-    .generate-button {
+    button.generate-button {
       margin-top: 30px;
+      width: 100%;
       padding: 12px;
-      font-size: 18px;
-      background-color: #b48b65;
+      background-color: #b08968;
       color: white;
+      font-weight: bold;
+      font-size: 18px;
       border: none;
       border-radius: 8px;
-      font-weight: bold;
       cursor: pointer;
     }
   </style>
@@ -87,8 +81,8 @@
   <div class="container">
     <h2>小工具🛠️</h2>
 
-    <label>門市代碼</label>
-    <input type="text" id="store" placeholder="">
+    <label for="store">門市代碼</label>
+    <input type="text" id="store" maxlength="3" placeholder="" />
 
     <label>用餐方式</label>
     <div class="button-group" id="mealType">
@@ -111,23 +105,29 @@
     let meal = "";
     let order = "";
 
-    const normalTailCodes = ["10050001", "14480005", "13350004", "12230003"];
-    const deliveryTailCodes = ["18600010", "13450002", "15200006", "13850008"];
+    const normalTailCodes = [
+      "10050001", "14480005", "13350004", "12230003",
+      "11464603", "11424103", "11412603", "11263003"
+    ];
+    const deliveryTailCodes = [
+      "18600010", "13450002", "15200006", "13850008",
+      "10050004", "14480006", "13350005", "12230007"
+    ];
 
     function selectOption(button, type) {
-      const group = type === 'meal' ? 'mealType' : 'orderType';
+      const group = type === "meal" ? "mealType" : "orderType";
       const buttons = document.querySelectorAll(`#${group} button`);
-      buttons.forEach(b => b.classList.remove('active'));
-      button.classList.add('active');
+      buttons.forEach(b => b.classList.remove("active"));
+      button.classList.add("active");
 
-      if (type === 'meal') {
+      if (type === "meal") {
         meal = button.innerText;
         if (meal === "外送") {
           order = "網訂";
           const orderButtons = document.querySelectorAll("#orderType button");
           orderButtons.forEach(b => {
-            b.classList.remove('active');
-            if (b.innerText === "網訂") b.classList.add('active');
+            b.classList.remove("active");
+            if (b.innerText === "網訂") b.classList.add("active");
           });
         }
       } else {
@@ -137,38 +137,45 @@
 
     function generateLink() {
       const store = document.getElementById("store").value.trim();
-      if (!store || store.length !== 3) {
+      if (!store || store.length !== 3 || isNaN(store)) {
         alert("請輸入有效的 3 碼門市代碼");
         return;
       }
 
+      const prefix = store.startsWith("5") ? "TWB" : "TWI";
       const now = new Date();
       now.setDate(now.getDate() - 1);
       const yyyy = now.getFullYear();
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const dd = String(now.getDate()).padStart(2, '0');
-      const date = `${yyyy}${mm}${dd}`;
+      const d = `${yyyy}${mm}${dd}`;
 
-      const s = String(Math.floor(Math.random() * 13) + 10); // 10-22
-      const rand1 = Math.floor(Math.random() * 90 + 10);
-      const rand2 = Math.floor(Math.random() * 50 + 10);
-      const rand3 = Math.floor(Math.random() * 89 + 11);
-      const safeTail = meal === "外送"
-        ? deliveryTailCodes[Math.floor(Math.random() * deliveryTailCodes.length)]
-        : normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)];
+      const s = String(Math.floor(Math.random() * 13) + 10);
+      const t1 = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+      const t2 = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+      const t = `${s}${t1}${t2}`;
 
-      const prefix = store.startsWith('5') ? 'TWB' : 'TWI';
-      const u = `${prefix}${store}${date}${safeTail}`;
-      const t = `${s}${String(rand1).padStart(2, '0')}${String(rand2).padStart(2, '0')}`;
+      let tail = "";
+      if (meal === "外送") {
+        tail = deliveryTailCodes[Math.floor(Math.random() * deliveryTailCodes.length)];
+      } else {
+        tail = normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)];
+      }
+
+      const u = `${prefix}${store}${d}${tail}`;
+      const k = order === "櫃檯" ? "2" : order === "點餐機" ? "3" : "2";
+      const o = meal === "內用" ? "1" : meal === "外帶" ? "2" : "4";
+      const m = "4";
+
       const obj = {
         S: `886K${prefix}${store}`,
         U: u,
-        D: date,
+        D: d,
         T: t,
         Country: "TW",
-        O: meal === "內用" ? "1" : meal === "外帶" ? "2" : "4",
-        M: order === "點餐機" ? "3" : order === "櫃檯" ? "2" : "1",
-        K: "2"
+        O: o,
+        M: m,
+        K: k
       };
 
       const base64 = btoa(JSON.stringify(obj));
