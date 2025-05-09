@@ -7,177 +7,158 @@
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #fdf6ed;
-      color: #5a3e36;
+      background-color: #fdf4ea;
       display: flex;
       justify-content: center;
-      padding: 30px;
+      padding: 40px;
     }
     .container {
-      background-color: #fffaf4;
-      padding: 35px 25px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.05);
-      width: 100%;
+      background-color: #fffaf2;
+      padding: 30px 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      width: 90%;
       max-width: 480px;
       text-align: center;
     }
     h2 {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom: 25px;
+      margin-bottom: 24px;
+      color: #6d4c41;
     }
-    label {
-      display: block;
-      margin-top: 16px;
-      margin-bottom: 8px;
+    .label {
       font-weight: bold;
-      font-size: 18px;
-    }
-    input {
-      width: 85%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
       font-size: 16px;
+      margin: 20px 0 10px;
+      color: #5d4037;
+    }
+    input, .button-group {
+      width: 90%;
+      max-width: 320px;
+      margin: 0 auto;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      display: block;
       text-align: center;
     }
     .button-group {
       display: flex;
       justify-content: center;
+      gap: 10px;
       flex-wrap: wrap;
-      gap: 12px;
-      margin: 10px 0;
-    }
-    .button-group button {
-      background-color: #eddcc7;
       border: none;
-      padding: 10px 18px;
-      font-weight: bold;
-      font-size: 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      color: #3d2b1f;
     }
-    .button-group button.active {
-      background-color: #d9b99b;
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      background-color: #d7b9a3;
       color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
     }
-    button.generate-button {
+    .btn.selected {
+      background-color: #8d6e63;
+    }
+    button.generate {
       margin-top: 30px;
-      width: 100%;
+      width: 90%;
       padding: 12px;
-      background-color: #b08968;
+      background-color: #a1887f;
       color: white;
       font-weight: bold;
       font-size: 18px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
+    }
+    button.generate:hover {
+      background-color: #7d5f52;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>小工具🛠️</h2>
-
-    <label for="store">門市代碼</label>
+    <div class="label">門市代碼</div>
     <input type="text" id="store" maxlength="3" placeholder="" />
 
-    <label>用餐方式</label>
-    <div class="button-group" id="mealType">
-      <button onclick="selectOption(this, 'meal')">內用</button>
-      <button onclick="selectOption(this, 'meal')">外帶</button>
-      <button onclick="selectOption(this, 'meal')">外送</button>
+    <div class="label">用餐方式</div>
+    <div class="button-group" id="meal-type">
+      <button class="btn" data-value="1">內用</button>
+      <button class="btn" data-value="2">外帶</button>
+      <button class="btn" data-value="4">外送</button>
     </div>
 
-    <label>點餐方式</label>
-    <div class="button-group" id="orderType">
-      <button onclick="selectOption(this, 'order')">點餐機</button>
-      <button onclick="selectOption(this, 'order')">櫃檯</button>
-      <button onclick="selectOption(this, 'order')">網訂</button>
+    <div class="label">點餐方式</div>
+    <div class="button-group" id="order-type">
+      <button class="btn" data-value="2">櫃台</button>
+      <button class="btn" data-value="3">點餐機</button>
+      <button class="btn" data-value="4">網訂</button>
     </div>
 
-    <button class="generate-button" onclick="generateLink()">🚀一鍵產生並複製問卷連結</button>
+    <button class="generate" onclick="generateAndCopy()">🚀 一鍵產生並複製問卷連結</button>
   </div>
 
   <script>
-    let meal = "";
-    let order = "";
+    const safeDeliverySuffixes = ["13350004", "14480005", "10050001", "12230003", "18600010", "11236003", "12330002", "11515003"];
+    const safeNormalSuffixes = ["114126", "114241", "114646", "112153", "110508", "122516", "115152", "122513", "154949", "173844"];
 
-    const normalTailCodes = [
-      "10050001", "14480005", "13350004", "12230003",
-      "11464603", "11424103", "11412603", "11263003"
-    ];
-    const deliveryTailCodes = [
-      "18600010", "13450002", "15200006", "13850008",
-      "10050004", "14480006", "13350005", "12230007"
-    ];
+    const mealBtns = document.querySelectorAll("#meal-type .btn");
+    const orderBtns = document.querySelectorAll("#order-type .btn");
 
-    function selectOption(button, type) {
-      const group = type === "meal" ? "mealType" : "orderType";
-      const buttons = document.querySelectorAll(`#${group} button`);
-      buttons.forEach(b => b.classList.remove("active"));
-      button.classList.add("active");
+    mealBtns.forEach(btn => btn.addEventListener("click", () => {
+      mealBtns.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    }));
+    orderBtns.forEach(btn => btn.addEventListener("click", () => {
+      orderBtns.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    }));
 
-      if (type === "meal") {
-        meal = button.innerText;
-        if (meal === "外送") {
-          order = "網訂";
-          const orderButtons = document.querySelectorAll("#orderType button");
-          orderButtons.forEach(b => {
-            b.classList.remove("active");
-            if (b.innerText === "網訂") b.classList.add("active");
-          });
-        }
-      } else {
-        order = button.innerText;
-      }
-    }
+    function generateAndCopy() {
+      const store = document.getElementById('store').value.trim();
+      const meal = document.querySelector("#meal-type .selected")?.dataset.value;
+      const order = document.querySelector("#order-type .selected")?.dataset.value;
 
-    function generateLink() {
-      const store = document.getElementById("store").value.trim();
-      if (!store || store.length !== 3 || isNaN(store)) {
-        alert("請輸入有效的 3 碼門市代碼");
+      if (!store || store.length !== 3 || !meal || !order) {
+        alert("請輸入正確資訊！");
         return;
       }
 
-      const prefix = store.startsWith("5") ? "TWB" : "TWI";
+      const prefix = store.startsWith('5') ? 'TWB' : 'TWI';
       const now = new Date();
-      now.setDate(now.getDate() - 1);
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const d = `${yyyy}${mm}${dd}`;
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+        .toISOString().slice(0,10).replace(/-/g,"");
+      const s = String(Math.floor(Math.random() * 13) + 10).padStart(2, '0');
+      const rand1 = String(Math.floor(Math.random() * 90) + 10);
+      const rand2 = String(Math.floor(Math.random() * 50) + 10);
+      const rand3 = String(Math.floor(Math.random() * 89) + 11);
 
-      const s = String(Math.floor(Math.random() * 13) + 10);
-      const t1 = String(Math.floor(Math.random() * 60)).padStart(2, '0');
-      const t2 = String(Math.floor(Math.random() * 60)).padStart(2, '0');
-      const t = `${s}${t1}${t2}`;
-
-      let tail = "";
-      if (meal === "外送") {
-        tail = deliveryTailCodes[Math.floor(Math.random() * deliveryTailCodes.length)];
+      let suffix = "";
+      if (meal === "4") {
+        suffix = safeDeliverySuffixes[Math.floor(Math.random() * safeDeliverySuffixes.length)];
       } else {
-        tail = normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)];
+        const useSafe = Math.random() < 0.4;
+        suffix = useSafe ? safeNormalSuffixes[Math.floor(Math.random() * safeNormalSuffixes.length)] : `${s}${rand1}${rand2}${rand3}`;
       }
 
-      const u = `${prefix}${store}${d}${tail}`;
-      const k = order === "櫃檯" ? "2" : order === "點餐機" ? "3" : "2";
-      const o = meal === "內用" ? "1" : meal === "外帶" ? "2" : "4";
-      const m = "4";
-
+      const u = `${prefix}${store}${d}${suffix}`;
+      const t = `${suffix.slice(0, 2)}${rand1}${rand2}`;
+      const k = "2";
       const obj = {
         S: `886K${prefix}${store}`,
         U: u,
         D: d,
         T: t,
         Country: "TW",
-        O: o,
-        M: m,
+        O: order,
+        M: meal,
         K: k
       };
-
       const base64 = btoa(JSON.stringify(obj));
       const link = `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${base64}`;
 
