@@ -1,171 +1,168 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>小工具🛠️</title>
+  <meta charset="UTF-8" />
+  <title>KFC 問卷連結產生器</title>
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #f9f3ec;
-      display: flex;
-      justify-content: center;
-      padding: 50px 20px;
+      background-color: #fdf7f0;
+      margin: 0;
+      padding: 0;
     }
     .container {
-      background-color: #fffaf2;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.05);
-      width: 100%;
       max-width: 480px;
+      margin: 40px auto;
+      background-color: #fff5ea;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(165, 108, 66, 0.15);
       text-align: center;
     }
-
-    h2 {
-      font-size: 26px;
+    h1 {
+      color: #5a3e2b;
+      font-size: 28px;
       font-weight: bold;
-      margin-bottom: 25px;
-      color: #5c4033;
+      margin-bottom: 30px;
     }
-
-    label {
-      display: block;
-      margin-top: 20px;
+    input, button {
+      font-family: "Microsoft JhengHei", sans-serif;
       font-weight: bold;
+      text-align: center;
     }
-
     input {
-      width: 70%;
-      padding: 10px;
-      margin-top: 8px;
+      width: 80%;
+      padding: 12px;
       font-size: 18px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      text-align: center;
-      font-weight: bold;
+      margin-bottom: 25px;
+      border: 2px solid #d1bfa6;
+      border-radius: 8px;
+      background-color: #fff;
+      color: #5a3e2b;
     }
-
+    .section-title {
+      color: #5a3e2b;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 20px 0 10px;
+    }
     .button-group {
       display: flex;
       justify-content: center;
-      gap: 10px;
       flex-wrap: wrap;
-      margin-top: 10px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
-
     .button-group button {
-      padding: 10px 18px;
+      background-color: #dec5a1;
+      color: #2d1c10;
       border: none;
+      padding: 10px 18px;
+      font-size: 16px;
       border-radius: 8px;
-      background-color: #e3c9a9;
-      font-weight: bold;
       cursor: pointer;
       transition: background-color 0.2s ease;
     }
-
     .button-group button.active {
-      background-color: #a47551;
-      color: white;
+      background-color: #b3885b;
+      color: #fff;
     }
-
     .generate-button {
-      margin-top: 30px;
-      padding: 12px;
+      margin-top: 25px;
+      background-color: #8c5b3c;
+      color: #fff;
+      padding: 12px 24px;
       font-size: 18px;
-      background-color: #b48b65;
-      color: white;
       border: none;
-      border-radius: 8px;
-      font-weight: bold;
+      border-radius: 10px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>小工具🛠️</h2>
-    <div class="label">門市代碼</div>
-    <input type="text" id="store" maxlength="3" placeholder="" />
-
-    <div class="label">用餐方式</div>
-    <div class="button-group" id="meal-type">
-      <button class="btn" data-value="1">內用</button>
-      <button class="btn" data-value="2">外帶</button>
-      <button class="btn" data-value="4">外送</button>
+    <h1>小工具🛠️</h1>
+    <input id="store" type="text" placeholder="請輸入門市代碼 (3碼)" />
+    
+    <div class="section-title">用餐方式</div>
+    <div class="button-group" id="mealType">
+      <button onclick="selectOption(this, 'meal')">內用</button>
+      <button onclick="selectOption(this, 'meal')">外帶</button>
+      <button onclick="selectOption(this, 'meal')">外送</button>
     </div>
 
-    <div class="label">點餐方式</div>
-    <div class="button-group" id="order-type">
-      <button class="btn" data-value="2">櫃台</button>
-      <button class="btn" data-value="3">點餐機</button>
-      <button class="btn" data-value="4">網訂</button>
+    <div class="section-title">點餐方式</div>
+    <div class="button-group" id="orderType">
+      <button onclick="selectOption(this, 'order')">點餐機</button>
+      <button onclick="selectOption(this, 'order')">櫃檯</button>
+      <button onclick="selectOption(this, 'order')">網訂</button>
     </div>
 
-    <button class="generate" onclick="generateAndCopy()">🚀 一鍵產生並複製問卷連結</button>
+    <button class="generate-button" onclick="generateLink()">🚀一鍵產生並複製問卷連結</button>
   </div>
 
   <script>
-    const safeDeliverySuffixes = ["13350004", "14480005", "10050001", "12230003", "18600010", "11236003", "12330002", "11515003"];
-    const safeNormalSuffixes = ["114126", "114241", "114646", "112153", "110508", "122516", "115152", "122513", "154949", "173844"];
+    let meal = "", order = "";
 
-    const mealBtns = document.querySelectorAll("#meal-type .btn");
-    const orderBtns = document.querySelectorAll("#order-type .btn");
+    const normalTailCodes = ["10050001", "14480005", "13350004", "12230003", "12014004", "11424103", "13300002", "15200005", "11122303", "11005801"];
+    const deliveryTailCodes = ["18600010", "13450002", "15200006", "13850008", "11266416", "14082105", "17730005", "19451101"];
 
-    mealBtns.forEach(btn => btn.addEventListener("click", () => {
-      mealBtns.forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
-    }));
-    orderBtns.forEach(btn => btn.addEventListener("click", () => {
-      orderBtns.forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
-    }));
+    function selectOption(button, type) {
+      const group = type === 'meal' ? 'mealType' : 'orderType';
+      const buttons = document.querySelectorAll(`#${group} button`);
+      buttons.forEach(b => b.classList.remove("active"));
+      button.classList.add("active");
+      if (type === "meal") {
+        meal = button.innerText;
+        if (meal === "外送") {
+          order = "網訂";
+          const orderButtons = document.querySelectorAll(`#orderType button`);
+          orderButtons.forEach(b => b.classList.remove("active"));
+          orderButtons[2].classList.add("active");
+        }
+      } else {
+        order = button.innerText;
+      }
+    }
 
-    function generateAndCopy() {
-      const store = document.getElementById('store').value.trim();
-      const meal = document.querySelector("#meal-type .selected")?.dataset.value;
-      const order = document.querySelector("#order-type .selected")?.dataset.value;
-
-      if (!store || store.length !== 3 || !meal || !order) {
-        alert("請輸入正確資訊！");
+    function generateLink() {
+      const store = document.getElementById("store").value.trim();
+      if (!store || store.length !== 3) {
+        alert("請輸入有效的 3 碼門市代碼");
         return;
       }
 
-      const prefix = store.startsWith('5') ? 'TWB' : 'TWI';
       const now = new Date();
-      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
-        .toISOString().slice(0,10).replace(/-/g,"");
-      const s = String(Math.floor(Math.random() * 13) + 10).padStart(2, '0');
-      const rand1 = String(Math.floor(Math.random() * 90) + 10);
-      const rand2 = String(Math.floor(Math.random() * 50) + 10);
-      const rand3 = String(Math.floor(Math.random() * 89) + 11);
+      now.setDate(now.getDate() - 1);
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
 
-      let suffix = "";
-      if (meal === "4") {
-        suffix = safeDeliverySuffixes[Math.floor(Math.random() * safeDeliverySuffixes.length)];
-      } else {
-        const useSafe = Math.random() < 0.4;
-        suffix = useSafe ? safeNormalSuffixes[Math.floor(Math.random() * safeNormalSuffixes.length)] : `${s}${rand1}${rand2}${rand3}`;
-      }
+      const rand1 = Math.floor(Math.random() * (22 - 10 + 1)) + 10;
+      const rand2 = Math.floor(Math.random() * (59 - 10 + 1)) + 10;
+      const rand3 = Math.floor(Math.random() * (99 - 11 + 1)) + 11;
 
-      const u = `${prefix}${store}${d}${suffix}`;
-      const t = `${suffix.slice(0, 2)}${rand1}${rand2}`;
-      const k = "2";
-      const obj = {
-        S: `886K${prefix}${store}`,
-        U: u,
-        D: d,
-        T: t,
-        Country: "TW",
-        O: order,
-        M: meal,
-        K: k
-      };
-      const base64 = btoa(JSON.stringify(obj));
-      const link = `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${base64}`;
+      const S = `886KTWI${store}`;
+      const D = `${yyyy}${mm}${dd}`;
+      const T = `${rand1}${rand2}${rand3}`;
+      const Country = "TW";
+      const O = meal === "內用" ? 1 : meal === "外帶" ? 2 : 4;
+      const M = 4;
+      const K = order === "點餐機" ? 3 : order === "櫃檯" ? 2 : 2;
+
+      const tail = meal === "外送" ? 
+        deliveryTailCodes[Math.floor(Math.random() * deliveryTailCodes.length)] :
+        Math.random() < 0.6 ?
+          normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)] :
+          `${rand1}${rand2}${rand3}`;
+
+      const U = `TWI${store}${yyyy}${mm}${dd}${tail}`;
+      const payload = { S, U, D, T, Country, O, M, K };
+      const encoded = btoa(JSON.stringify(payload));
+      const link = `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${encoded}`;
 
       navigator.clipboard.writeText(link).then(() => {
-        alert("問卷連結已複製！");
+        alert("複製成功！請貼上使用");
       });
     }
   </script>
