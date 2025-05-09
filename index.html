@@ -1,82 +1,84 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小工具🛠️</title>
   <style>
     body {
       font-family: "Microsoft JhengHei", sans-serif;
-      background-color: #fdf4ea;
+      background-color: #f9f3ec;
       display: flex;
       justify-content: center;
-      padding: 40px;
+      padding: 50px 20px;
     }
     .container {
       background-color: #fffaf2;
-      padding: 30px 25px;
+      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
-      width: 90%;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+      width: 100%;
       max-width: 480px;
       text-align: center;
     }
+
     h2 {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
-      margin-bottom: 24px;
-      color: #6d4c41;
+      margin-bottom: 25px;
+      color: #5c4033;
     }
-    .label {
-      font-weight: bold;
-      font-size: 16px;
-      margin: 20px 0 10px;
-      color: #5d4037;
-    }
-    input, .button-group {
-      width: 90%;
-      max-width: 320px;
-      margin: 0 auto;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+
+    label {
       display: block;
-      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
     }
+
+    input {
+      width: 70%;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+    }
+
     .button-group {
       display: flex;
       justify-content: center;
       gap: 10px;
       flex-wrap: wrap;
-      border: none;
+      margin-top: 10px;
     }
-    .btn {
-      padding: 8px 14px;
-      border-radius: 6px;
-      background-color: #d7b9a3;
-      color: white;
+
+    .button-group button {
+      padding: 10px 18px;
       border: none;
-      cursor: pointer;
+      border-radius: 8px;
+      background-color: #e3c9a9;
       font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
     }
-    .btn.selected {
-      background-color: #8d6e63;
+
+    .button-group button.active {
+      background-color: #a47551;
+      color: white;
     }
-    button.generate {
+
+    .generate-button {
       margin-top: 30px;
-      width: 90%;
       padding: 12px;
-      background-color: #a1887f;
-      color: white;
-      font-weight: bold;
       font-size: 18px;
+      background-color: #b48b65;
+      color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
-    }
-    button.generate:hover {
-      background-color: #7d5f52;
     }
   </style>
 </head>
