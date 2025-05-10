@@ -6,82 +6,85 @@
   <title>小工具🛠️</title>
   <style>
     body {
-      background-color: #fdf6ee; /* 奶茶底 */
+      background-color: #fdf6ee;
       font-family: "Microsoft JhengHei", sans-serif;
-      margin: 0;
-      padding: 0;
       display: flex;
       justify-content: center;
+      padding: 50px;
     }
 
     .container {
-      width: 40%;
-      margin-top: 40px;
-      background-color: #fff8f0;
-      padding: 30px;
-      border-radius: 12px;
+      width: 500px;
+      height: 500px;
+      background-color: #fffaf4;
+      border-radius: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
+      padding: 30px 25px;
     }
 
     h2 {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
-      color: #5d3e2e;
-      margin-bottom: 24px;
+      color: #5a3c2d;
+      margin-bottom: 30px;
     }
 
     label {
       display: block;
-      margin-top: 20px;
-      font-weight: bold;
+      margin-top: 18px;
       font-size: 18px;
-      color: #5d3e2e;
+      font-weight: bold;
+      color: #5a3c2d;
     }
 
     input[type="text"] {
       width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #d3bfa8;
-      border-radius: 6px;
-      text-align: center;
-      margin-top: 8px;
+      padding: 12px;
+      font-size: 18px;
       font-weight: bold;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #c9b29b;
+      margin-top: 8px;
     }
 
     .btn-group {
       display: flex;
       justify-content: space-between;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
     .btn-group button {
       flex: 1;
-      margin: 0 5px;
-      padding: 10px 0;
+      margin: 0 4px;
+      padding: 12px 0;
+      font-size: 17px;
+      font-weight: bold;
+      background-color: #e6d0b9;
       border: none;
       border-radius: 6px;
-      font-size: 16px;
-      font-weight: bold;
+      color: #000;
       cursor: pointer;
-      background-color: #e2c9b3;
-      color: #4b2e1d;
       transition: background-color 0.3s ease;
     }
 
+    .btn-group button:hover {
+      background-color: #d4b89d;
+    }
+
     .btn-group button.active {
-      background-color: #c2a48f;
+      background-color: #c4a88b;
     }
 
     #generate {
       margin-top: 36px;
       width: 100%;
-      padding: 12px;
-      font-size: 18px;
+      padding: 16px;
+      font-size: 20px;
       font-weight: bold;
       background-color: #b08968;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -98,7 +101,7 @@
     <h2>小工具🛠️</h2>
 
     <label>門市代碼</label>
-    <input type="text" id="store" maxlength="3" placeholder="請輸入3碼門市代碼" />
+    <input type="text" id="store" maxlength="3" placeholder="" />
 
     <label>用餐方式</label>
     <div class="btn-group" id="mealType">
@@ -114,15 +117,15 @@
       <button onclick="selectBtn(this, 'order')" data-value="4">網訂</button>
     </div>
 
-    <button id="generate" onclick="generate()">一鍵產生問卷連結</button>
+    <button id="generate" onclick="generate()">🚀 一鍵產生問卷連結</button>
   </div>
 
   <script>
     let mealValue = "";
     let orderValue = "";
 
-    const externalTailCodes = ["10050001", "14480005", "13350004"]; // 外送安全尾碼池
-    const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011", "0020", "0022", "0033"]; // 正常安全尾碼池
+    const externalTailCodes = ["10050001", "14480005", "13350004"];
+    const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011", "0020", "0022", "0033"];
 
     function selectBtn(button, type) {
       const group = type === 'meal' ? document.getElementById('mealType') : document.getElementById('orderType');
@@ -133,7 +136,6 @@
       if (type === 'meal') {
         mealValue = button.dataset.value;
         if (mealValue === "4") {
-          // 外送自動綁定網訂
           const orderButtons = document.getElementById('orderType').querySelectorAll('button');
           orderButtons.forEach(btn => {
             btn.classList.remove('active');
@@ -163,16 +165,13 @@
       const now = new Date();
       const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
       const d = date.toISOString().slice(0, 10).replace(/-/g, "");
-
       const s = String(Math.floor(Math.random() * (22 - 10 + 1)) + 10).padStart(2, '0');
       const t = `${s}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
 
       let tail = "";
       if (mealValue === "4") {
-        // 外送固定尾碼池
         tail = externalTailCodes[Math.floor(Math.random() * externalTailCodes.length)];
       } else {
-        // 正常混合尾碼
         const useSafe = Math.random() < 0.6;
         if (useSafe) {
           tail = normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)];
@@ -192,8 +191,10 @@
         M: "4",
         K: mealValue
       };
+
       const base64 = btoa(JSON.stringify(obj));
       const link = `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${base64}`;
+
       navigator.clipboard.writeText(link).then(() => {
         alert("已複製成功");
       });
