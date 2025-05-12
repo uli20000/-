@@ -107,7 +107,7 @@
     <h2>小工具🛠️</h2>
 
     <label>門市代碼</label>
-    <input type="text" id="store" maxlength="3" placeholder="請輸入" />
+    <input type="text" id="store" maxlength="3" placeholder="請輸入3碼門市代碼" />
 
     <label>用餐方式</label>
     <div class="btn-group" id="mealType">
@@ -118,19 +118,19 @@
 
     <label>點餐方式</label>
     <div class="btn-group" id="orderType">
-      <button onclick="selectBtn(this, 'order')" data-value="3" id="kiosk">點餐機</button>
-      <button onclick="selectBtn(this, 'order')" data-value="2" id="counter">櫃檯</button>
-      <button onclick="selectBtn(this, 'order')" data-value="4" id="web">網訂</button>
+      <button onclick="selectBtn(this, 'order')" data-value="3">點餐機</button>
+      <button onclick="selectBtn(this, 'order')" data-value="2">櫃檯</button>
+      <button onclick="selectBtn(this, 'order')" data-value="4">網訂</button>
     </div>
 
-    <button id="generate" onclick="generate()">🚀 連結一鍵生成並複製</button>
+    <button id="generate" onclick="generate()">🚀 一鍵產生問卷連結</button>
   </div>
 
   <script>
     let mealValue = "";
     let orderValue = "";
 
-    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "19300002", "17730005", "19440002"];
+    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "13420002", "16443166", "17730005"];
     const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011", "0020", "0022", "0033"];
 
     function selectBtn(button, type) {
@@ -138,33 +138,32 @@
       const buttons = group.querySelectorAll('button');
       buttons.forEach(btn => btn.classList.remove('active'));
 
-      button.classList.add('active');
-
       if (type === 'meal') {
         mealValue = button.dataset.value;
+        button.classList.add('active');
 
-        const kiosk = document.getElementById("kiosk");
-        const counter = document.getElementById("counter");
-        const web = document.getElementById("web");
-
+        const orderBtns = document.querySelectorAll('#orderType button');
         if (mealValue === "4") {
-          // 外送，只能網訂
-          kiosk.classList.add("disabled");
-          counter.classList.add("disabled");
-          web.classList.remove("disabled");
-          web.classList.add("active");
           orderValue = "4";
-        } else {
-          // 內用/外帶，全部解鎖
-          [kiosk, counter, web].forEach(btn => {
-            btn.classList.remove("disabled");
-            btn.classList.remove("active");
+          orderBtns.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.value === "4") {
+              btn.classList.add('active');
+            } else {
+              btn.classList.add('disabled');
+              btn.disabled = true;
+            }
           });
-          orderValue = "";
+        } else {
+          orderBtns.forEach(btn => {
+            btn.classList.remove('disabled');
+            btn.disabled = false;
+          });
         }
       } else {
-        if (!button.classList.contains("disabled")) {
+        if (!button.classList.contains('disabled')) {
           orderValue = button.dataset.value;
+          button.classList.add('active');
         }
       }
     }
@@ -172,7 +171,7 @@
     function generate() {
       const store = document.getElementById("store").value.trim();
       if (!store || store.length !== 3 || isNaN(store)) {
-        alert("請輸入有效門市代碼");
+        alert("請輸入有效的3碼門市代碼");
         return;
       }
       if (!mealValue || !orderValue) {
@@ -188,7 +187,15 @@
       const t = `${s}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
 
       let tail = "";
+      let k = mealValue;
+      let o = orderValue;
+      let m = "4";
+
       if (mealValue === "4") {
+        // 外送邏輯
+        k = "1";  // 標記為內用才能觸發外送題組
+        o = "4";  // 網訂
+        m = "4";
         tail = externalTailCodes[Math.floor(Math.random() * externalTailCodes.length)];
       } else {
         const useSafe = Math.random() < 0.6;
@@ -206,9 +213,9 @@
         D: d,
         T: t,
         Country: "TW",
-        O: orderValue,
-        M: "4",
-        K: mealValue
+        O: o,
+        M: m,
+        K: k
       };
 
       const base64 = btoa(JSON.stringify(obj));
