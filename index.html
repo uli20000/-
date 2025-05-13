@@ -10,8 +10,7 @@
       font-family: "Microsoft JhengHei", sans-serif;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      padding: 40px;
     }
 
     .container {
@@ -113,8 +112,8 @@
     <label>用餐方式</label>
     <div class="btn-group" id="mealType">
       <button onclick="selectBtn(this, 'meal')" data-value="1">內用</button>
-      <button onclick="selectBtn(this, 'meal')" data-value="2">外帶</button>
-      <button onclick="selectBtn(this, 'meal')" data-value="4">外送</button>
+      <button onclick="selectBtn(this, 'meal')" data-value="4">外帶</button>
+      <button onclick="selectBtn(this, 'meal')" data-value="外送">外送</button>
     </div>
 
     <label>點餐方式</label>
@@ -131,8 +130,8 @@
     let mealValue = "";
     let orderValue = "";
 
-    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "2001", "0001"];
-    const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011", "0020", "0022", "0033"];
+    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "0001", "2001", "0004"];
+    const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011"];
 
     function selectBtn(button, type) {
       const group = type === 'meal' ? document.getElementById('mealType') : document.getElementById('orderType');
@@ -142,24 +141,25 @@
 
       if (type === 'meal') {
         mealValue = button.dataset.value;
-        const orderButtons = document.querySelectorAll('#orderType button');
-        if (mealValue === "4") {
+        const orderButtons = document.getElementById('orderType').querySelectorAll('button');
+
+        if (mealValue === "外送") {
+          // 外送時只允許網訂
           orderButtons.forEach(btn => {
-            btn.classList.add("disabled");
+            btn.classList.remove('active');
+            btn.classList.add('disabled');
             if (btn.dataset.value === "4") {
-              btn.classList.add("active");
+              btn.classList.add('active');
+              btn.classList.remove('disabled');
               orderValue = "4";
-            } else {
-              btn.classList.remove("active");
             }
           });
         } else {
-          orderButtons.forEach(btn => {
-            btn.classList.remove("disabled");
-          });
+          // 解除禁用
+          orderButtons.forEach(btn => btn.classList.remove('disabled'));
         }
       } else {
-        if (!button.classList.contains("disabled")) {
+        if (!button.classList.contains('disabled')) {
           orderValue = button.dataset.value;
         }
       }
@@ -183,34 +183,32 @@
       const s = String(Math.floor(Math.random() * (22 - 10 + 1)) + 10).padStart(2, '0');
       const t = `${s}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
 
-      let tail = "";
-      let k = "2"; // default
-      let m = mealValue;
-      let o = orderValue;
+      let u = "", m = "", k = "", tail = "";
 
-      if (mealValue === "4") {
-        // 外送固定邏輯
+      if (mealValue === "外送") {
+        // 外送邏輯
+        m = "1";  // 內用標記，觸發外送題組
+        k = "1";  // 固定為 1，搭配外送成功範例
         tail = externalTailCodes[Math.floor(Math.random() * externalTailCodes.length)];
-        o = "4"; // 網訂
-        k = "1"; // 為觸發外送題組，K=1 (標記內用)
-        m = "4";
+        u = `${prefix}${store}${d}${tail}`;
       } else {
+        // 正常題組邏輯
+        m = mealValue;
+        k = "2";
         const useSafe = Math.random() < 0.6;
-        if (useSafe) {
-          tail = normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)];
-        } else {
-          tail = String(Math.floor(10000000 + Math.random() * 89999999));
-        }
+        tail = useSafe
+          ? normalTailCodes[Math.floor(Math.random() * normalTailCodes.length)]
+          : String(Math.floor(10000000 + Math.random() * 89999999));
+        u = `${prefix}${store}${d}${tail}`;
       }
 
-      const u = `${prefix}${store}${d}${tail}`;
       const obj = {
         S: `886K${prefix}${store}`,
         U: u,
         D: d,
         T: t,
         Country: "TW",
-        O: o,
+        O: orderValue,
         M: m,
         K: k
       };
