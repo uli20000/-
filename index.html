@@ -10,27 +10,23 @@
       font-family: "Microsoft JhengHei", sans-serif;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      padding: 40px;
     }
-
     .container {
-      width: 500px;
-      height: 500px;
+      width: 520px;
+      height: 520px;
       background-color: #fffaf4;
       border-radius: 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       text-align: center;
       padding: 30px 25px;
     }
-
     h2 {
       font-size: 26px;
       font-weight: bold;
       color: #5a3c2d;
       margin-bottom: 30px;
     }
-
     label {
       display: block;
       margin-top: 18px;
@@ -38,7 +34,6 @@
       font-weight: bold;
       color: #5a3c2d;
     }
-
     input[type="text"] {
       width: 90%;
       padding: 12px;
@@ -49,13 +44,11 @@
       border: 1px solid #c9b29b;
       margin-top: 8px;
     }
-
     .btn-group {
       display: flex;
       justify-content: space-between;
       margin-top: 12px;
     }
-
     .btn-group button {
       flex: 1;
       margin: 0 4px;
@@ -69,21 +62,17 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
-
     .btn-group button:hover {
       background-color: #d4b89d;
     }
-
     .btn-group button.active {
       background-color: #c4a88b;
     }
-
     .btn-group button.disabled {
       background-color: #eee4db;
       color: #999;
       cursor: not-allowed;
     }
-
     #generate {
       margin-top: 42px;
       width: 100%;
@@ -97,7 +86,6 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
-
     #generate:hover {
       background-color: #8d6a4a;
     }
@@ -108,11 +96,11 @@
     <h2>小工具🛠️</h2>
 
     <label>門市代碼</label>
-    <input type="text" id="store" maxlength="3" placeholder="" />
+    <input type="text" id="store" maxlength="3" placeholder="請輸入3碼門市代碼" />
 
     <label>用餐方式</label>
     <div class="btn-group" id="mealType">
-      <button onclick="selectBtn(this, 'meal')" data-value="1">內用</button>
+      <button onclick="selectBtn(this, 'meal')" data-value="2">內用</button>
       <button onclick="selectBtn(this, 'meal')" data-value="4">外帶</button>
       <button onclick="selectBtn(this, 'meal')" data-value="外送">外送</button>
     </div>
@@ -124,15 +112,15 @@
       <button onclick="selectBtn(this, 'order')" data-value="4">網訂</button>
     </div>
 
-    <button id="generate" onclick="generate()">🚀 一鍵複製問卷連結</button>
+    <button id="generate" onclick="generate()">🚀 一鍵產生問卷連結</button>
   </div>
 
   <script>
     let mealValue = "";
     let orderValue = "";
 
-    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "0001", "2001", "0004"];
-    const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011"];
+    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "0004", "2001", "0001"];
+    const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011", "0020", "0022", "0033"];
 
     function selectBtn(button, type) {
       const group = type === 'meal' ? document.getElementById('mealType') : document.getElementById('orderType');
@@ -143,21 +131,19 @@
       if (type === 'meal') {
         mealValue = button.dataset.value;
         const orderButtons = document.getElementById('orderType').querySelectorAll('button');
-
         if (mealValue === "外送") {
-          // 外送時只允許網訂
+          orderValue = "4";
           orderButtons.forEach(btn => {
             btn.classList.remove('active');
             btn.classList.add('disabled');
             if (btn.dataset.value === "4") {
               btn.classList.add('active');
-              btn.classList.remove('disabled');
-              orderValue = "4";
             }
           });
         } else {
-          // 解除禁用
-          orderButtons.forEach(btn => btn.classList.remove('disabled'));
+          orderButtons.forEach(btn => {
+            btn.classList.remove('disabled');
+          });
         }
       } else {
         if (!button.classList.contains('disabled')) {
@@ -169,7 +155,7 @@
     function generate() {
       const store = document.getElementById("store").value.trim();
       if (!store || store.length !== 3 || isNaN(store)) {
-        alert("請輸入有效門市代碼");
+        alert("請輸入有效的3碼門市代碼");
         return;
       }
       if (!mealValue || !orderValue) {
@@ -184,16 +170,18 @@
       const s = String(Math.floor(Math.random() * (22 - 10 + 1)) + 10).padStart(2, '0');
       const t = `${s}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
 
-      let u = "", m = "", k = "", tail = "";
+      let m = "";
+      let k = "";
+      let tail = "";
+      let u = "";
 
       if (mealValue === "外送") {
-        // 外送邏輯
-        m = "1";  // 內用標記，觸發外送題組
-        k = "1";  // 固定為 1，搭配外送成功範例
+        k = Math.random() < 0.5 ? "1" : "2";
+        m = k;
         tail = externalTailCodes[Math.floor(Math.random() * externalTailCodes.length)];
         u = `${prefix}${store}${d}${tail}`;
+        orderValue = "4";
       } else {
-        // 正常題組邏輯
         m = mealValue;
         k = "2";
         const useSafe = Math.random() < 0.6;
@@ -218,7 +206,7 @@
       const link = `https://customer.kfc-listens.com/jfe/form/SV_1R1VSPEYVPlV1JA?Q_EED=${base64}`;
 
       navigator.clipboard.writeText(link).then(() => {
-        alert("✅已複製成功");
+        alert("已複製成功");
       });
     }
   </script>
