@@ -10,7 +10,8 @@
       font-family: "Microsoft JhengHei", sans-serif;
       display: flex;
       justify-content: center;
-      padding: 40px;
+      align-items: center;
+      min-height: 100vh;
     }
 
     .container {
@@ -130,40 +131,36 @@
     let mealValue = "";
     let orderValue = "";
 
-    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "13420002", "16443166", "17730005"];
+    const externalTailCodes = ["10050001", "14480005", "13350004", "12230003", "18600010", "2001", "0001"];
     const normalTailCodes = ["0053", "0041", "0026", "0061", "0003", "0004", "0005", "0010", "0030", "0011", "0020", "0022", "0033"];
 
     function selectBtn(button, type) {
       const group = type === 'meal' ? document.getElementById('mealType') : document.getElementById('orderType');
       const buttons = group.querySelectorAll('button');
       buttons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
 
       if (type === 'meal') {
         mealValue = button.dataset.value;
-        button.classList.add('active');
-
-        const orderBtns = document.querySelectorAll('#orderType button');
+        const orderButtons = document.querySelectorAll('#orderType button');
         if (mealValue === "4") {
-          orderValue = "4";
-          orderBtns.forEach(btn => {
-            btn.classList.remove('active');
+          orderButtons.forEach(btn => {
+            btn.classList.add("disabled");
             if (btn.dataset.value === "4") {
-              btn.classList.add('active');
+              btn.classList.add("active");
+              orderValue = "4";
             } else {
-              btn.classList.add('disabled');
-              btn.disabled = true;
+              btn.classList.remove("active");
             }
           });
         } else {
-          orderBtns.forEach(btn => {
-            btn.classList.remove('disabled');
-            btn.disabled = false;
+          orderButtons.forEach(btn => {
+            btn.classList.remove("disabled");
           });
         }
       } else {
-        if (!button.classList.contains('disabled')) {
+        if (!button.classList.contains("disabled")) {
           orderValue = button.dataset.value;
-          button.classList.add('active');
         }
       }
     }
@@ -187,16 +184,16 @@
       const t = `${s}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
 
       let tail = "";
-      let k = mealValue;
+      let k = "2"; // default
+      let m = mealValue;
       let o = orderValue;
-      let m = "4";
 
       if (mealValue === "4") {
-        // 外送邏輯
-        k = "1";  // 標記為內用才能觸發外送題組
-        o = "4";  // 網訂
-        m = "4";
+        // 外送固定邏輯
         tail = externalTailCodes[Math.floor(Math.random() * externalTailCodes.length)];
+        o = "4"; // 網訂
+        k = "1"; // 為觸發外送題組，K=1 (標記內用)
+        m = "4";
       } else {
         const useSafe = Math.random() < 0.6;
         if (useSafe) {
