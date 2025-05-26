@@ -104,12 +104,23 @@
       "0030", "0011", "0020", "0022", "0033", "0065", "0071", "0088"
     ];
 
-    function getYesterdayDateStr() {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      return d.getFullYear().toString() +
-             String(d.getMonth() + 1).padStart(2, '0') +
-             String(d.getDate()).padStart(2, '0');
+    function getRandomTimeCode() {
+  const startHour = 11;
+  const endHour = 20;
+  const hour = String(Math.floor(Math.random() * (endHour - startHour + 1)) + startHour).padStart(2, '0');
+
+  let minute, second;
+
+  if (hour === "20") {
+    minute = String(Math.floor(Math.random() * 31)).padStart(2, '0');  // 最多到 20:30
+  } else {
+    minute = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+  }
+
+  second = String(Math.floor(Math.random() * 60)).padStart(2, '0');
+
+  return hour + minute + second;
+}
     }
 
     function getRandomTimeCode() {
