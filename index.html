@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KFC 問卷小工具</title>
+  <title>小工具</title>
   <style>
     html, body {
       height: 100%;
@@ -80,17 +80,17 @@
 </head>
 <body>
   <div class="container">
-    <h2>小工具🛠️</h2>
+    <h2>🛠️</h2>
 
     <input id="store" type="text" maxlength="3" placeholder="請輸入3碼" />
 
     <div class="btn-group">
-      <button onclick="generate('5','3','normal')">內用 / 點餐機</button>
-      <button onclick="generate('4','3','normal')">外帶 / 點餐機</button>
-      <button onclick="generate('5','2','normal')">內用 / 櫃檯</button>
-      <button onclick="generate('4','2','normal')">外帶 / 櫃檯</button>
-      <button onclick="generate('2','4','normal')">快取</button>
-      <button onclick="generate('1','4','delivery')">外送</button>
+      <button onclick="generate('5','3')">內用 / 點餐機</button>
+      <button onclick="generate('4','3')">外帶 / 點餐機</button>
+      <button onclick="generate('5','2')">內用 / 櫃檯</button>
+      <button onclick="generate('4','2')">外帶 / 櫃檯</button>
+      <button onclick="generate('2','4')">快取</button>
+      <button onclick="generate('1','4')">外送</button>
     </div>
   </div>
 
@@ -107,27 +107,17 @@
       const startHour = 11;
       const endHour = 20;
       const hour = String(Math.floor(Math.random() * (endHour - startHour + 1)) + startHour).padStart(2, '0');
-
       let minute, second;
       if (hour === "20") {
         minute = String(Math.floor(Math.random() * 31)).padStart(2, '0');
       } else {
         minute = String(Math.floor(Math.random() * 60)).padStart(2, '0');
       }
-
       second = String(Math.floor(Math.random() * 60)).padStart(2, '0');
       return hour + minute + second;
     }
 
-    function generateTailCode7Digits() {
-      const part1 = String(Math.floor(Math.random() * 11) + 10); // 10–20
-      const part2 = String(Math.floor(Math.random() * 59) + 1).padStart(2, '0'); // 01–59
-      const part3 = String(Math.floor(Math.random() * 59) + 1).padStart(2, '0'); // 01–59
-      const part4 = String(Math.floor(Math.random() * 9) + 1); // 1–9
-      return part1 + part2 + part3 + part4;
-    }
-
-    function generate(M, O, type) {
+    function generate(M, O) {
       let store = document.getElementById("store").value.trim();
       if (store.length === 2) store = "0" + store;
       if (store.length !== 3 || isNaN(store)) {
@@ -135,11 +125,20 @@
         return;
       }
 
-      const prefix = store.startsWith("5") ? "TWB" : "TWI";
+      const firstDigit = store.charAt(0);
+      const prefix = ['0', '1', '2'].includes(firstDigit) ? "TWI"
+                   : firstDigit === '5' ? "TWB"
+                   : "INVALID";
+      if (prefix === "INVALID") {
+        alert("門市代碼僅支援開頭為 0 / 1 / 2 / 5");
+        return;
+      }
+
       const date = getYesterdayDateStr();
       const timeCode = getRandomTimeCode();
-      const tail = generateTailCode7Digits();
-      const u = prefix + store + date + timeCode + tail; // U 格式含時間碼
+      const tail = timeCode + String(Math.floor(Math.random() * 9) + 1); // T + 1–9
+
+      const u = prefix + store + date + tail;
 
       const payload = {
         S: "886K" + prefix + store,
