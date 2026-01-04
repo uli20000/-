@@ -27,36 +27,36 @@
             <p id="currentDate" class="text-slate-500 font-bold text-xs"></p>
         </header>
 
-        <div class="dark-card p-7 space-y-8 shadow-xl">
-            <div class="space-y-3">
+        <div class="dark-card p-8 space-y-8 shadow-xl">
+            <div class="space-y-4">
                 <div class="flex justify-between items-end">
-                    <span class="text-[10px] font-black text-slate-500 uppercase">Energy Progress</span>
-                    <span id="kcalPercent" class="text-2xl font-black text-sky-400">0%</span>
+                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">今日熱量攝取</span>
+                    <span id="kcalPercent" class="text-3xl font-black text-sky-400">0%</span>
                 </div>
-                <div class="w-full bg-slate-800/50 rounded-full h-4 overflow-hidden p-1">
+                <div class="w-full bg-slate-800/50 rounded-full h-5 overflow-hidden p-1">
                     <div id="kcalBar" class="sky-accent h-full rounded-full progress-bar" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between items-baseline">
-                    <p id="kcalText" class="text-3xl font-black italic tracking-tighter">0 <span class="text-sm not-italic text-slate-500">/ 0 kcal</span></p>
-                    <p id="tdeeGoalText" class="text-[10px] text-slate-600 font-bold italic"></p>
+                    <p id="kcalText" class="text-5xl font-black italic tracking-tighter">0 <span class="text-lg not-italic text-slate-500 ml-2">/ 0 kcal</span></p>
+                    <p id="tdeeGoalText" class="text-xs text-slate-600 font-bold italic"></p>
                 </div>
             </div>
 
-            <div class="space-y-3 border-t border-slate-800/50 pt-6">
+            <div class="space-y-4 border-t border-slate-800/50 pt-8">
                 <div class="flex justify-between items-end">
-                    <span class="text-[10px] font-black text-slate-500 uppercase">Hydration Goal</span>
-                    <span id="waterPercent" class="text-2xl font-black text-cyan-400">0%</span>
+                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">今日飲水目標</span>
+                    <span id="waterPercent" class="text-3xl font-black text-cyan-400">0%</span>
                 </div>
-                <div class="w-full bg-slate-800/50 rounded-full h-4 overflow-hidden p-1">
+                <div class="w-full bg-slate-800/50 rounded-full h-5 overflow-hidden p-1">
                     <div id="waterBar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full progress-bar" style="width: 0%"></div>
                 </div>
-                <p id="waterText" class="text-3xl font-black italic tracking-tighter">0 <span class="text-sm not-italic text-slate-500">/ 3500 cc</span></p>
+                <p id="waterText" class="text-5xl font-black italic tracking-tighter">0 <span class="text-lg not-italic text-slate-500 ml-2">/ 3500 cc</span></p>
             </div>
 
-            <div class="flex justify-between pt-4 border-t border-slate-800/30 px-2">
-                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">PRO</p><p id="totalPro" class="text-lg font-bold text-sky-100">0g</p></div>
-                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">CARB</p><p id="totalCarb" class="text-lg font-bold text-sky-100">0g</p></div>
-                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">FAT</p><p id="totalFat" class="text-lg font-bold text-sky-100">0g</p></div>
+            <div class="flex justify-between pt-6 border-t border-slate-800/30 px-2">
+                <div class="text-center"><p class="text-xs text-slate-500 font-bold mb-1">蛋白質</p><p id="totalPro" class="text-2xl font-bold text-sky-100">0g</p></div>
+                <div class="text-center"><p class="text-xs text-slate-500 font-bold mb-1">碳水</p><p id="totalCarb" class="text-2xl font-bold text-sky-100">0g</p></div>
+                <div class="text-center"><p class="text-xs text-slate-500 font-bold mb-1">脂肪</p><p id="totalFat" class="text-2xl font-bold text-sky-100">0g</p></div>
             </div>
         </div>
 
@@ -72,8 +72,9 @@
 
             <div id="searchResult" class="hidden bg-sky-50 p-5 rounded-3xl border border-sky-100 animate-in fade-in zoom-in duration-300">
                 <p id="resName" class="font-black text-sky-900 text-lg mb-4"></p>
-                <div class="flex gap-3">
-                    <input type="number" id="foodAmount" value="100" class="w-24 p-3 rounded-xl border-none font-black text-sky-600 focus:ring-0">
+                <div class="flex gap-3 items-center">
+                    <input type="number" id="foodAmount" placeholder="份量" class="w-24 p-3 rounded-xl border-none font-black text-sky-600 focus:ring-0 bg-white">
+                    <span class="text-sky-600 font-bold">克 (g)</span>
                     <button onclick="addToDiary()" class="flex-1 sky-accent text-white py-3 rounded-xl font-black shadow-md">確認加入</button>
                 </div>
             </div>
@@ -83,14 +84,14 @@
 
         <div class="glass-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weight Record</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">體重紀錄</p>
                 <div class="flex gap-2">
                     <input type="number" id="weightInput" step="0.1" placeholder="kg" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-lg font-bold outline-none focus:ring-4 focus:ring-sky-100 transition">
                     <button onclick="saveWeight()" class="bg-slate-800 text-white px-5 rounded-2xl font-black shadow-md active:scale-95 transition">儲存</button>
                 </div>
             </div>
             <div class="space-y-4">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quick Water</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">快速補水</p>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="addWater(300)" class="bg-sky-50 hover:bg-sky-100 text-sky-600 py-4 rounded-2xl font-black text-sm transition-all border border-sky-100">+ 300cc</button>
                     <button onclick="addWater(500)" class="sky-accent text-white py-4 rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">+ 500cc</button>
@@ -100,8 +101,8 @@
 
         <div class="glass-card p-7">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-sm font-black text-slate-700 uppercase italic">Trend Analysis</h3>
-                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">Delete Last</button>
+                <h3 class="text-sm font-black text-slate-700 uppercase italic">趨勢分析</h3>
+                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">刪除最後一筆</button>
             </div>
             <div class="h-64">
                 <canvas id="weightChart"></canvas>
@@ -115,7 +116,7 @@
         const APP_ID = '3b185717';
         const APP_KEY = '023d04b5d811e3b080c6e899752092b8';
         const MY_HEIGHT = 167; const MY_AGE = 31;
-        const waterGoal = 3500; // 更新水量目標
+        const waterGoal = 3500;
         const todayStr = new Date().toLocaleDateString();
 
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric' });
@@ -151,11 +152,13 @@
                 tempNutrients = f.nutrients;
                 document.getElementById('searchResult').classList.remove('hidden');
                 document.getElementById('resName').innerText = f.label;
+                document.getElementById('foodAmount').value = ''; // 搜尋後預設空白
             }
         }
 
         function addToDiary() {
-            const amt = parseFloat(document.getElementById('foodAmount').value) || 100;
+            const amt = parseFloat(document.getElementById('foodAmount').value);
+            if(!amt) { alert('請輸入克數'); return; }
             diary.items.push({ id: Date.now(), name: document.getElementById('resName').innerText, kcal: tempNutrients.ENERC_KCAL * (amt/100), pro: tempNutrients.PROCNT * (amt/100), carb: tempNutrients.CHOCDF * (amt/100), fat: tempNutrients.FAT * (amt/100), amt: amt });
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('foodInput').value = '';
@@ -180,12 +183,12 @@
 
             document.getElementById('kcalPercent').innerText = Math.round(sums.kcal/targetKcal*100) + '%';
             document.getElementById('kcalBar').style.width = Math.min((sums.kcal/targetKcal*100), 100) + '%';
-            document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-xs text-slate-500 italic ml-1">/ ${targetKcal} kcal</span>`;
-            document.getElementById('tdeeGoalText').innerText = `BASIS: ${lastW}kg`;
+            document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-xl text-slate-500 italic ml-1">/ ${targetKcal} kcal</span>`;
+            document.getElementById('tdeeGoalText').innerText = `基準體重: ${lastW}kg`;
             
             document.getElementById('waterPercent').innerText = Math.round(diary.water/waterGoal*100) + '%';
             document.getElementById('waterBar').style.width = Math.min((diary.water/waterGoal*100), 100) + '%';
-            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xs text-slate-500 italic ml-1">/ ${waterGoal} cc</span>`;
+            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xl text-slate-500 italic ml-1">/ ${waterGoal} cc</span>`;
 
             document.getElementById('totalPro').innerText = Math.round(sums.pro) + 'g';
             document.getElementById('totalCarb').innerText = Math.round(sums.carb) + 'g';
@@ -194,10 +197,10 @@
             const list = document.getElementById('todayItems');
             list.innerHTML = diary.items.map(i => `
                 <div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl cursor-pointer hover:bg-red-50 transition-all border border-slate-100 group">
-                    <span class="text-slate-700 font-bold text-xs">${i.name} <span class="text-[10px] text-slate-300 ml-2">${i.amt}g</span></span>
+                    <span class="text-slate-700 font-bold text-xs">${i.name} <span class="text-[10px] text-slate-300 ml-2">${i.amt}克</span></span>
                     <span class="font-black text-sky-500 text-xs group-hover:text-red-500">${Math.round(i.kcal)} kcal</span>
                 </div>
-            `).join('') || '<p class="text-[10px] text-center py-6 text-slate-300 font-black italic tracking-widest">READY TO LOG</p>';
+            `).join('') || '<p class="text-[10px] text-center py-6 text-slate-300 font-black italic tracking-widest">等待紀錄中</p>';
         }
 
         function updateCharts() {
