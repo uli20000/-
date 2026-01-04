@@ -30,7 +30,7 @@
         <div class="dark-card p-8 space-y-8 shadow-xl">
             <div class="space-y-4">
                 <div class="flex justify-between items-end">
-                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">今日熱量攝取</span>
+                    <span class="text-xs font-black text-slate-500 tracking-widest">今日熱量攝取</span>
                     <span id="kcalPercent" class="text-3xl font-black text-sky-400">0%</span>
                 </div>
                 <div class="w-full bg-slate-800/50 rounded-full h-5 overflow-hidden p-1">
@@ -44,7 +44,7 @@
 
             <div class="space-y-4 border-t border-slate-800/50 pt-8">
                 <div class="flex justify-between items-end">
-                    <span class="text-xs font-black text-slate-500 uppercase tracking-widest">今日飲水目標</span>
+                    <span class="text-xs font-black text-slate-500 tracking-widest">今日飲水目標</span>
                     <span id="waterPercent" class="text-3xl font-black text-cyan-400">0%</span>
                 </div>
                 <div class="w-full bg-slate-800/50 rounded-full h-5 overflow-hidden p-1">
@@ -91,10 +91,10 @@
                 </div>
             </div>
             <div class="space-y-4">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">快速補水</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="addWater(300)" class="bg-sky-50 hover:bg-sky-100 text-sky-600 py-4 rounded-2xl font-black text-sm transition-all border border-sky-100">+ 300cc</button>
-                    <button onclick="addWater(500)" class="sky-accent text-white py-4 rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">+ 500cc</button>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">水分管理</p>
+                <div class="flex gap-2">
+                    <button onclick="addWater(300)" class="flex-1 sky-accent text-white py-4 rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">+ 300cc</button>
+                    <button onclick="addWater(-100)" class="bg-white border border-red-100 text-red-400 px-4 rounded-2xl font-bold text-xs hover:bg-red-50 transition-all">扣 100</button>
                 </div>
             </div>
         </div>
@@ -102,7 +102,7 @@
         <div class="glass-card p-7">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-sm font-black text-slate-700 uppercase italic">趨勢分析</h3>
-                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">刪除最後一筆</button>
+                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">刪除最後一筆體重</button>
             </div>
             <div class="h-64">
                 <canvas id="weightChart"></canvas>
@@ -152,7 +152,7 @@
                 tempNutrients = f.nutrients;
                 document.getElementById('searchResult').classList.remove('hidden');
                 document.getElementById('resName').innerText = f.label;
-                document.getElementById('foodAmount').value = ''; // 搜尋後預設空白
+                document.getElementById('foodAmount').value = '';
             }
         }
 
@@ -166,7 +166,13 @@
         }
 
         function deleteItem(id) { diary.items = diary.items.filter(i => i.id !== id); sync(); }
-        function addWater(cc) { diary.water += cc; sync(); }
+        
+        function addWater(cc) { 
+            diary.water += cc; 
+            if(diary.water < 0) diary.water = 0; // 防止扣成負數
+            sync(); 
+        }
+
         function saveWeight() {
             const val = document.getElementById('weightInput').value;
             if(!val) return;
@@ -188,7 +194,7 @@
             
             document.getElementById('waterPercent').innerText = Math.round(diary.water/waterGoal*100) + '%';
             document.getElementById('waterBar').style.width = Math.min((diary.water/waterGoal*100), 100) + '%';
-            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xl text-slate-500 italic ml-1">/ ${waterGoal} cc</span>`;
+            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xl text-slate-500 italic ml-1">/ 3500 cc</span>`;
 
             document.getElementById('totalPro').innerText = Math.round(sums.pro) + 'g';
             document.getElementById('totalCarb').innerText = Math.round(sums.carb) + 'g';
