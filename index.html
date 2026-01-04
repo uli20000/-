@@ -3,61 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mifa 瘦身助手</title>
+    <title>Mifa 減重助手 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-50 p-5">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-        <h2 class="text-2xl font-bold text-green-600 mb-4">Mifa 營養查詢器</h2>
+<body class="bg-gray-100 min-h-screen p-4">
+    <div class="max-w-md mx-auto space-y-4">
         
-        <input type="text" id="foodInput" placeholder="輸入食物英文 (例如: Apple)" 
-               class="w-full border p-2 rounded mb-4 focus:outline-none focus:ring-2 focus:ring-green-500">
-        
-        <button onclick="searchFood()" 
-                class="w-full bg-green-500 text-white py-2 rounded font-bold hover:bg-green-600 transition">
-            查詢營養成分
-        </button>
+        <div class="bg-white rounded-2xl shadow p-6 text-center">
+            <h1 class="text-xl font-bold text-gray-700">今日攝取狀態</h1>
+            <div class="flex justify-around my-4">
+                <div><p class="text-xs text-gray-400">熱量</p><p id="totalKcal" class="text-lg font-bold">0</p></div>
+                <div><p class="text-xs text-gray-400">蛋白質</p><p id="totalPro" class="text-lg font-bold text-blue-500">0</p></div>
+                <div><p class="text-xs text-gray-400">碳水</p><p id="totalCarb" class="text-lg font-bold text-yellow-600">0</p></div>
+                <div><p class="text-xs text-gray-400">脂肪</p><p id="totalFat" class="text-lg font-bold text-red-400">0</p></div>
+            </div>
+            <button onclick="clearToday()" class="text-xs text-red-400 underline">重置今日紀錄</button>
+        </div>
 
-        <div id="result" class="mt-6 hidden">
-            <h3 id="foodName" class="text-lg font-bold border-b pb-2 mb-2"></h3>
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div class="bg-orange-50 p-2 rounded">🔥 熱量: <span id="kcal" class="font-bold"></span> kcal</div>
-                <div class="bg-blue-50 p-2 rounded">🥩 蛋白質: <span id="protein" class="font-bold"></span> g</div>
-                <div class="bg-yellow-50 p-2 rounded">🍞 碳水: <span id="carbs" class="font-bold"></span> g</div>
-                <div class="bg-red-50 p-2 rounded">🥑 脂肪: <span id="fat" class="font-bold"></span> g</div>
+        <div class="bg-white rounded-2xl shadow p-6">
+            <input type="text" id="foodInput" placeholder="輸入食物英文 (如: Beef)" class="w-full border p-2 rounded-lg mb-2">
+            <button onclick="searchFood()" class="w-full bg-green-500 text-white py-2 rounded-lg font-bold">搜尋食物</button>
+            <div id="searchResult" class="mt-4 hidden border-t pt-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p id="resName" class="font-bold"></p>
+                        <p id="resInfo" class="text-sm text-gray-500"></p>
+                    </div>
+                    <button onclick="addToDiary()" class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">+ 加入</button>
+                </div>
             </div>
         </div>
+
+        <div class="bg-white rounded-2xl shadow p-6">
+            <h2 class="font-bold mb-3">今日體重記錄 (kg)</h2>
+            <div class="flex gap-2">
+                <input type="number" id="weightInput" step="0.1" placeholder="例如: 65.5" class="flex-1 border p-2 rounded-lg">
+                <button onclick="saveWeight()" class="bg-orange-400 text-white px-4 py-2 rounded-lg font-bold">儲存</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
         const APP_ID = '3b185717';
         const APP_KEY = '023d04b5d811e3b080c6e899752092b8';
+        let tempFood = null;
+
+        // 初始化資料
+        let diary = JSON.parse(localStorage.getItem('mifa_diary')) || { kcal:0, pro:0, carb:0, fat:0, date: new Date().toLocaleDateString() };
+        let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
+
+        // 檢查日期是否需要重置
+        if(diary.date !== new Date().toLocaleDateString()) {
+            clearToday();
+        }
+        updateDisplay();
 
         async function searchFood() {
             const food = document.getElementById('foodInput').value;
-            if(!food) return alert('請輸入食物名稱');
-
             const url = `https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${food}&nutrition-type=logging`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.hints && data.hints.length > 0) {
-                    const nutrients = data.hints[0].food.nutrients;
-                    
-                    document.getElementById('result').classList.remove('hidden');
-                    document.getElementById('foodName').innerText = data.hints[0].food.label;
-                    document.getElementById('kcal').innerText = Math.round(nutrients.ENERC_KCAL);
-                    document.getElementById('protein').innerText = nutrients.PROCNT.toFixed(1);
-                    document.getElementById('carbs').innerText = nutrients.CHOCDF.toFixed(1);
-                    document.getElementById('fat').innerText = nutrients.FAT.toFixed(1);
-                } else {
-                    alert('找不到該食物，試試看別的單字！');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('連線出錯了！');
+            const res = await fetch(url);
+            const data = await res.json();
+            if(data.hints[0]) {
+                const f = data.hints[0].food;
+                tempFood = f.nutrients;
+                document.getElementById('searchResult').classList.remove('hidden');
+                document.getElementById('resName').innerText = f.label;
+                document.getElementById('resInfo').innerText = `${Math.round(tempFood.ENERC_KCAL)} kcal / 100g`;
             }
+        }
+
+        function addToDiary() {
+            diary.kcal += tempFood.ENERC_KCAL;
+            diary.pro += tempFood.PROCNT;
+            diary.carb += tempFood.CHOCDF;
+            diary.fat += tempFood.FAT;
+            saveAndRefesh();
+        }
+
+        function saveWeight() {
+            const w = document.getElementById('weightInput').value;
+            if(!w) return;
+            weightHistory.push({ date: new Date().toLocaleDateString(), val: parseFloat(w) });
+            localStorage.setItem('mifa_weight', JSON.stringify(weightHistory));
+            alert('體重已記錄！');
+        }
+
+        function saveAndRefesh() {
+            localStorage.setItem('mifa_diary', JSON.stringify(diary));
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('totalKcal').innerText = Math.round(diary.kcal);
+            document.getElementById('totalPro').innerText = diary.pro.toFixed(1);
+            document.getElementById('totalCarb').innerText = diary.carb.toFixed(1);
+            document.getElementById('totalFat').innerText = diary.fat.toFixed(1);
+        }
+
+        function clearToday() {
+            diary = { kcal:0, pro:0, carb:0, fat:0, date: new Date().toLocaleDateString() };
+            saveAndRefesh();
         }
     </script>
 </body>
