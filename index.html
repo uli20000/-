@@ -3,154 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 FIT - 天空藍版</title>
+    <title>2026 FIT - Mifa's Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #F0F7FF; color: #1E293B; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 32px rgba(59, 130, 246, 0.08); }
-        .dark-card { background: linear-gradient(145deg, #1E293B, #0F172A); border-radius: 32px; color: white; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2); }
-        .sky-btn { background: linear-gradient(135deg, #7DD3FC 0%, #3B82F6 100%); transition: all 0.3s ease; }
-        .sky-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
-        .progress-bar { transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+        .glass-card { background: white; border-radius: 30px; border: 1px solid #E2E8F0; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.04); }
+        .dark-card { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 32px; color: white; }
+        .sky-accent { background: linear-gradient(135deg, #7DD3FC 0%, #3B82F6 100%); }
+        .progress-bar { transition: width 0.8s ease-in-out; }
+        input[type="number"]::-webkit-inner-spin-button { display: none; }
     </style>
 </head>
-<body class="pb-10">
+<body class="pb-12">
 
-    <div class="max-w-4xl mx-auto p-4 space-y-6">
-        <header class="flex justify-between items-end px-3 pt-6">
+    <div class="max-w-2xl mx-auto p-5 space-y-6">
+        <header class="flex justify-between items-end px-2 pt-4">
             <div>
                 <h1 class="text-4xl font-black text-slate-800 tracking-tighter italic">2026 <span class="text-sky-500">FIT</span></h1>
-                <p class="text-[10px] text-sky-400 font-black tracking-widest uppercase">Mifa's Daily Partner</p>
+                <p class="text-[10px] text-sky-400 font-black tracking-[0.2em] uppercase">Mifa Premium Tracker</p>
             </div>
-            <div class="text-right">
-                <p id="currentDate" class="text-slate-500 font-bold text-sm"></p>
-                <span class="inline-block px-2 py-1 bg-sky-100 text-sky-600 text-[10px] rounded-md font-bold mt-1">LIVE UPDATE</span>
-            </div>
+            <p id="currentDate" class="text-slate-500 font-bold text-xs"></p>
         </header>
 
-        <div class="dark-card p-8 space-y-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Energy Intake</span>
-                        <span id="kcalPercent" class="text-2xl font-black text-sky-400">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden p-[2px]">
-                        <div id="kcalBar" class="sky-btn h-full rounded-full progress-bar shadow-[0_0_15px_rgba(125,211,252,0.5)]" style="width: 0%"></div>
-                    </div>
-                    <div class="flex justify-between items-baseline">
-                        <p id="kcalText" class="text-4xl font-black italic tracking-tighter">0 <span class="text-lg text-slate-500">/ 0 kcal</span></p>
-                        <p id="tdeeGoalText" class="text-[10px] text-slate-500 font-bold"></p>
-                    </div>
+        <div class="dark-card p-7 space-y-8 shadow-xl">
+            <div class="space-y-3">
+                <div class="flex justify-between items-end">
+                    <span class="text-[10px] font-black text-slate-500 uppercase">Energy Progress</span>
+                    <span id="kcalPercent" class="text-2xl font-black text-sky-400">0%</span>
                 </div>
-
-                <div class="space-y-4 md:border-l md:border-slate-800 md:pl-10">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Water Intake</span>
-                        <span id="waterPercent" class="text-2xl font-black text-cyan-400">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden p-[2px]">
-                        <div id="waterBar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full progress-bar shadow-[0_0_15px_rgba(34,211,238,0.5)]" style="width: 0%"></div>
-                    </div>
-                    <p id="waterText" class="text-4xl font-black italic tracking-tighter">0 <span class="text-lg text-slate-500">/ 2000 cc</span></p>
+                <div class="w-full bg-slate-800/50 rounded-full h-4 overflow-hidden p-1">
+                    <div id="kcalBar" class="sky-accent h-full rounded-full progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between items-baseline">
+                    <p id="kcalText" class="text-3xl font-black italic tracking-tighter">0 <span class="text-sm not-italic text-slate-500">/ 0 kcal</span></p>
+                    <p id="tdeeGoalText" class="text-[10px] text-slate-600 font-bold italic"></p>
                 </div>
             </div>
 
-            <div class="flex justify-around pt-6 border-t border-slate-800/50">
-                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">PRO</p><p id="totalPro" class="text-xl font-bold text-sky-100">0g</p></div>
-                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">CARB</p><p id="totalCarb" class="text-xl font-bold text-sky-100">0g</p></div>
-                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">FAT</p><p id="totalFat" class="text-xl font-bold text-sky-100">0g</p></div>
+            <div class="space-y-3 border-t border-slate-800/50 pt-6">
+                <div class="flex justify-between items-end">
+                    <span class="text-[10px] font-black text-slate-500 uppercase">Hydration Goal</span>
+                    <span id="waterPercent" class="text-2xl font-black text-cyan-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-800/50 rounded-full h-4 overflow-hidden p-1">
+                    <div id="waterBar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full progress-bar" style="width: 0%"></div>
+                </div>
+                <p id="waterText" class="text-3xl font-black italic tracking-tighter">0 <span class="text-sm not-italic text-slate-500">/ 3500 cc</span></p>
+            </div>
+
+            <div class="flex justify-between pt-4 border-t border-slate-800/30 px-2">
+                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">PRO</p><p id="totalPro" class="text-lg font-bold text-sky-100">0g</p></div>
+                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">CARB</p><p id="totalCarb" class="text-lg font-bold text-sky-100">0g</p></div>
+                <div class="text-center"><p class="text-[10px] text-slate-500 font-bold mb-1">FAT</p><p id="totalFat" class="text-lg font-bold text-sky-100">0g</p></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            
-            <div class="md:col-span-5 space-y-6">
-                <div class="glass-card p-6 space-y-8">
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-6 bg-sky-500 rounded-full"></div>
-                            <h3 class="font-black text-slate-700">體重紀錄</h3>
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="number" id="weightInput" step="0.1" placeholder="kg" class="w-full bg-white border border-slate-100 p-4 rounded-2xl text-lg font-bold outline-none focus:ring-4 focus:ring-sky-100 transition">
-                            <button onclick="saveWeight()" class="sky-btn text-white px-6 rounded-2xl font-black shadow-lg active:scale-95">儲存</button>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4 border-t border-slate-100 pt-6">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-6 bg-cyan-400 rounded-full"></div>
-                            <h3 class="font-black text-slate-700">快速補水</h3>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="addWater(300)" class="bg-white border-2 border-sky-100 hover:border-sky-300 text-sky-600 py-4 rounded-2xl font-black text-sm transition-all">+ 300cc</button>
-                            <button onclick="addWater(500)" class="bg-white border-2 border-sky-100 hover:border-sky-300 text-sky-600 py-4 rounded-2xl font-black text-sm transition-all">+ 500cc</button>
-                        </div>
-                    </div>
+        <div class="glass-card p-6 space-y-5">
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-5 bg-sky-500 rounded-full"></div>
+                <h3 class="font-black text-slate-700">飲食搜尋與明細</h3>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="foodInput" placeholder="輸入食材 (例如: Apple)" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-sky-100 transition">
+                <button onclick="handleSearch()" class="sky-accent text-white px-6 rounded-2xl font-black shadow-lg active:scale-95 transition">搜尋</button>
+            </div>
+
+            <div id="searchResult" class="hidden bg-sky-50 p-5 rounded-3xl border border-sky-100 animate-in fade-in zoom-in duration-300">
+                <p id="resName" class="font-black text-sky-900 text-lg mb-4"></p>
+                <div class="flex gap-3">
+                    <input type="number" id="foodAmount" value="100" class="w-24 p-3 rounded-xl border-none font-black text-sky-600 focus:ring-0">
+                    <button onclick="addToDiary()" class="flex-1 sky-accent text-white py-3 rounded-xl font-black shadow-md">確認加入</button>
                 </div>
             </div>
 
-            <div class="md:col-span-7">
-                <div class="glass-card p-6 flex flex-col h-full min-h-[450px]">
-                    <div class="flex items-center gap-2 mb-6">
-                        <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
-                        <h3 class="font-black text-slate-700">飲食智慧查詢</h3>
-                    </div>
-                    
-                    <div class="flex gap-2 mb-6">
-                        <input type="text" id="foodInput" placeholder="輸入食材 (例如: Egg)" class="w-full bg-white border border-slate-100 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-blue-50">
-                        <button onclick="handleSearch()" class="bg-slate-800 text-white px-8 rounded-2xl font-black shadow-lg active:scale-95 transition">搜尋</button>
-                    </div>
+            <div id="todayItems" class="space-y-3 pt-2"></div>
+        </div>
 
-                    <div id="searchResult" class="hidden bg-sky-50 p-5 rounded-2xl border border-sky-100 mb-6 animate-pulse-once">
-                        <p id="resName" class="font-black text-sky-900 text-lg mb-4"></p>
-                        <div class="flex gap-3">
-                            <div class="relative flex-1">
-                                <input type="number" id="foodAmount" value="100" class="w-full p-3 rounded-xl border-none font-black text-sky-600 focus:ring-0">
-                                <span class="absolute right-3 top-3 text-xs font-bold text-sky-300 underline">grams</span>
-                            </div>
-                            <button onclick="addToDiary()" class="sky-btn text-white px-8 rounded-xl font-black shadow-md">確認加入</button>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                        <div class="flex justify-between items-center mb-4">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Today's Logs</p>
-                            <button onclick="diary.items=[]; sync();" class="text-[10px] text-red-300 font-bold hover:text-red-500">清空明細</button>
-                        </div>
-                        <div id="todayItems" class="space-y-3"></div>
-                    </div>
+        <div class="glass-card p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Weight Record</p>
+                <div class="flex gap-2">
+                    <input type="number" id="weightInput" step="0.1" placeholder="kg" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-lg font-bold outline-none focus:ring-4 focus:ring-sky-100 transition">
+                    <button onclick="saveWeight()" class="bg-slate-800 text-white px-5 rounded-2xl font-black shadow-md active:scale-95 transition">儲存</button>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Quick Water</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="addWater(300)" class="bg-sky-50 hover:bg-sky-100 text-sky-600 py-4 rounded-2xl font-black text-sm transition-all border border-sky-100">+ 300cc</button>
+                    <button onclick="addWater(500)" class="sky-accent text-white py-4 rounded-2xl font-black text-sm shadow-md active:scale-95 transition-all">+ 500cc</button>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card p-8">
-            <div class="flex justify-between items-center mb-8">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-6 bg-slate-800 rounded-full"></div>
-                    <h3 class="font-black text-slate-700 uppercase tracking-tighter">Weight Analytics</h3>
-                </div>
-                <button onclick="deleteLastWeight()" class="text-xs font-bold text-slate-300 hover:text-red-400 px-3 py-1 rounded-full border border-slate-100 transition">刪除上一筆</button>
+        <div class="glass-card p-7">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-sm font-black text-slate-700 uppercase italic">Trend Analysis</h3>
+                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">Delete Last</button>
             </div>
-            <div class="h-72">
+            <div class="h-64">
                 <canvas id="weightChart"></canvas>
             </div>
         </div>
 
-        <footer class="text-center py-10 opacity-20 hover:opacity-100 transition-opacity">
-            <button onclick="if(confirm('警告：這將抹除所有歷史紀錄，確定嗎？')) {localStorage.clear(); location.reload();}" class="text-[10px] font-black tracking-[0.3em] text-slate-400">HARD RESET SYSTEM</button>
-        </footer>
+        <button onclick="if(confirm('確定重置？')) {localStorage.clear(); location.reload();}" class="w-full text-[10px] text-slate-300 font-black tracking-[0.3em] py-8">SYSTEM RESET</button>
     </div>
 
     <script>
         const APP_ID = '3b185717';
         const APP_KEY = '023d04b5d811e3b080c6e899752092b8';
         const MY_HEIGHT = 167; const MY_AGE = 31;
+        const waterGoal = 3500; // 更新水量目標
         const todayStr = new Date().toLocaleDateString();
 
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString('zh-TW', { year:'numeric', month:'long', day:'numeric' });
@@ -191,15 +156,7 @@
 
         function addToDiary() {
             const amt = parseFloat(document.getElementById('foodAmount').value) || 100;
-            diary.items.push({
-                id: Date.now(),
-                name: document.getElementById('resName').innerText,
-                kcal: tempNutrients.ENERC_KCAL * (amt/100),
-                pro: tempNutrients.PROCNT * (amt/100),
-                carb: tempNutrients.CHOCDF * (amt/100),
-                fat: tempNutrients.FAT * (amt/100),
-                amt: amt
-            });
+            diary.items.push({ id: Date.now(), name: document.getElementById('resName').innerText, kcal: tempNutrients.ENERC_KCAL * (amt/100), pro: tempNutrients.PROCNT * (amt/100), carb: tempNutrients.CHOCDF * (amt/100), fat: tempNutrients.FAT * (amt/100), amt: amt });
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('foodInput').value = '';
             sync();
@@ -217,23 +174,18 @@
         function deleteLastWeight() { if(weightHistory.length > 0 && confirm("刪除最後一筆？")) { weightHistory.pop(); sync(); } }
 
         function updateUI() {
-            const sums = diary.items.reduce((acc, cur) => {
-                acc.kcal += cur.kcal; acc.pro += cur.pro; acc.carb += cur.carb; acc.fat += cur.fat;
-                return acc;
-            }, {kcal:0, pro:0, carb:0, fat:0});
-
+            const sums = diary.items.reduce((acc, cur) => { acc.kcal += cur.kcal; acc.pro += cur.pro; acc.carb += cur.carb; acc.fat += cur.fat; return acc; }, {kcal:0, pro:0, carb:0, fat:0});
             const lastW = weightHistory.length > 0 ? weightHistory[weightHistory.length-1].val : 60;
             const targetKcal = Math.round(((10 * lastW) + (6.25 * MY_HEIGHT) - (5 * MY_AGE) - 161) * 1.2) - 350;
-            const waterGoal = 2000;
 
             document.getElementById('kcalPercent').innerText = Math.round(sums.kcal/targetKcal*100) + '%';
             document.getElementById('kcalBar').style.width = Math.min((sums.kcal/targetKcal*100), 100) + '%';
-            document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-lg text-slate-600">/ ${targetKcal} kcal</span>`;
+            document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-xs text-slate-500 italic ml-1">/ ${targetKcal} kcal</span>`;
             document.getElementById('tdeeGoalText').innerText = `BASIS: ${lastW}kg`;
             
             document.getElementById('waterPercent').innerText = Math.round(diary.water/waterGoal*100) + '%';
             document.getElementById('waterBar').style.width = Math.min((diary.water/waterGoal*100), 100) + '%';
-            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-lg text-slate-600">/ ${waterGoal} cc</span>`;
+            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xs text-slate-500 italic ml-1">/ ${waterGoal} cc</span>`;
 
             document.getElementById('totalPro').innerText = Math.round(sums.pro) + 'g';
             document.getElementById('totalCarb').innerText = Math.round(sums.carb) + 'g';
@@ -241,11 +193,11 @@
 
             const list = document.getElementById('todayItems');
             list.innerHTML = diary.items.map(i => `
-                <div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-white p-4 rounded-2xl cursor-pointer hover:bg-sky-50 transition-all border border-slate-50 shadow-sm">
-                    <span class="text-slate-700 font-bold text-sm">${i.name} <span class="text-[10px] text-slate-300 ml-2">${i.amt}g</span></span>
-                    <span class="font-black text-sky-500 text-sm">${Math.round(i.kcal)} kcal</span>
+                <div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl cursor-pointer hover:bg-red-50 transition-all border border-slate-100 group">
+                    <span class="text-slate-700 font-bold text-xs">${i.name} <span class="text-[10px] text-slate-300 ml-2">${i.amt}g</span></span>
+                    <span class="font-black text-sky-500 text-xs group-hover:text-red-500">${Math.round(i.kcal)} kcal</span>
                 </div>
-            `).join('') || '<p class="text-[10px] text-center py-10 text-slate-300 font-bold italic uppercase tracking-widest">No entries found.</p>';
+            `).join('') || '<p class="text-[10px] text-center py-6 text-slate-300 font-black italic tracking-widest">READY TO LOG</p>';
         }
 
         function updateCharts() {
@@ -257,16 +209,12 @@
                     labels: weightHistory.map(h => h.date).slice(-7),
                     datasets: [{ 
                         data: weightHistory.map(h => h.val).slice(-7), 
-                        borderColor: '#0EA5E9', borderWidth: 5, pointRadius: 6, pointBackgroundColor: '#FFF', pointBorderWidth: 3,
-                        backgroundColor: (c) => {
-                            const g = c.chart.ctx.createLinearGradient(0,0,0,400);
-                            g.addColorStop(0, 'rgba(14, 165, 233, 0.2)'); g.addColorStop(1, 'rgba(14, 165, 233, 0)');
-                            return g;
-                        },
+                        borderColor: '#3B82F6', borderWidth: 4, pointRadius: 5, pointBackgroundColor: '#FFF', pointBorderWidth: 3,
+                        backgroundColor: (c) => { const g = c.chart.ctx.createLinearGradient(0,0,0,400); g.addColorStop(0, 'rgba(59, 130, 246, 0.1)'); g.addColorStop(1, 'rgba(59, 130, 246, 0)'); return g; },
                         fill: true, tension: 0.4 
                     }]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { border: {display:false}, grid: { color: 'rgba(226, 232, 240, 0.5)' }, ticks: { font: {weight:'bold'} } }, x: { grid: { display: false }, ticks: { font: {weight:'bold'} } } } }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { border: {display:false}, grid: { color: '#F1F5F9' } }, x: { grid: { display: false } } } }
             });
         }
 
