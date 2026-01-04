@@ -3,141 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mifa Fit - 智慧減重助理</title>
+    <title>Mifa Fit Pro - 智能減重助手</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .progress-fill { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen pb-10">
+<body class="bg-gray-50 min-h-screen pb-24">
 
-    <div class="max-w-md mx-auto p-4 space-y-6">
+    <div class="max-w-md mx-auto p-4 space-y-4">
         <header class="text-center py-4">
-            <h1 class="text-3xl font-extrabold text-green-600">Mifa Fit</h1>
-            <p id="currentDate" class="text-gray-500 font-medium"></p>
+            <h1 class="text-3xl font-extrabold text-green-600">Mifa Fit Pro</h1>
+            <p id="currentDate" class="text-gray-500 font-medium text-sm"></p>
         </header>
 
-        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-            <h2 class="text-gray-400 text-sm font-bold uppercase tracking-wider mb-4 text-center">今日攝取總計</h2>
-            <div class="grid grid-cols-4 gap-2 text-center">
-                <div><p class="text-xs text-gray-400">熱量</p><p id="totalKcal" class="text-xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-400 text-blue-500">蛋白質</p><p id="totalPro" class="text-xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-400 text-yellow-600">碳水</p><p id="totalCarb" class="text-xl font-bold">0</p></div>
-                <div><p class="text-xs text-gray-400 text-red-400">脂肪</p><p id="totalFat" class="text-xl font-bold">0</p></div>
+        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
+            <div class="flex justify-between items-end mb-2">
+                <h2 class="text-gray-700 font-bold">今日熱量目標</h2>
+                <span id="kcalPercent" class="text-xs font-bold text-green-600">0%</span>
             </div>
-            <div class="mt-4 pt-4 border-t flex justify-between items-center">
-                <span id="insight" class="text-xs text-gray-500 italic">尚未輸入數據</span>
-                <button onclick="clearToday()" class="text-xs text-red-300 hover:text-red-500">重置今日</button>
+            <div class="w-full bg-gray-100 rounded-full h-3 mb-2">
+                <div id="kcalBar" class="bg-green-500 h-3 rounded-full progress-fill" style="width: 0%"></div>
             </div>
-        </div>
-
-        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-            <h2 class="font-bold mb-3 flex items-center">🔍 飲食紀錄 (可輸入中文)</h2>
-            <div class="flex gap-2 mb-3">
-                <input type="text" id="foodInput" placeholder="輸入食物 (如: 雞蛋)" 
-                       class="flex-1 border border-gray-200 p-2 rounded-xl focus:ring-2 focus:ring-green-400 outline-none">
-                <button id="searchBtn" onclick="handleSearch()" class="bg-green-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-green-600 transition">搜尋</button>
+            <div class="flex justify-between text-[10px] text-gray-400">
+                <p id="tdeeGoalText">正在計算...</p>
+                <p id="kcalText">0 / 0 kcal</p>
             </div>
             
-            <p id="translateStatus" class="text-xs text-blue-400 mb-2 hidden"></p>
-
-            <div id="searchResult" class="hidden bg-gray-50 p-4 rounded-2xl">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p id="resName" class="font-bold text-gray-700"></p>
-                        <p id="resInfo" class="text-xs text-gray-500"></p>
-                    </div>
-                    <button onclick="addToDiary()" class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-md">+ 加入</button>
+            <div class="grid grid-cols-3 gap-2 mt-4">
+                <div class="bg-blue-50 p-2 rounded-2xl text-center border border-blue-100">
+                    <p class="text-[10px] text-blue-400 font-bold">蛋白質</p>
+                    <p id="totalPro" class="text-sm font-black text-blue-700">0g</p>
+                </div>
+                <div class="bg-yellow-50 p-2 rounded-2xl text-center border border-yellow-100">
+                    <p class="text-[10px] text-yellow-600 font-bold">碳水</p>
+                    <p id="totalCarb" class="text-sm font-black text-yellow-800">0g</p>
+                </div>
+                <div class="bg-red-50 p-2 rounded-2xl text-center border border-red-100">
+                    <p class="text-[10px] text-red-400 font-bold">脂肪</p>
+                    <p id="totalFat" class="text-sm font-black text-red-700">0g</p>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-            <h2 class="font-bold mb-3 flex items-center">⚖️ 體重記錄 (kg)</h2>
+        <div class="bg-white rounded-3xl shadow-sm p-5 border border-blue-50">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-bold text-blue-600 flex items-center gap-1">💧 飲水追蹤</h2>
+                <span id="waterText" class="text-xs font-bold text-blue-500">0 / 2000 cc</span>
+            </div>
+            <div class="w-full bg-blue-50 rounded-full h-2 mb-4">
+                <div id="waterBar" class="bg-blue-400 h-2 rounded-full progress-fill" style="width: 0%"></div>
+            </div>
             <div class="flex gap-2">
-                <input type="number" id="weightInput" step="0.1" placeholder="今日體重" 
-                       class="flex-1 border border-gray-200 p-2 rounded-xl focus:ring-2 focus:ring-orange-400 outline-none">
-                <button onclick="saveWeight()" class="bg-orange-400 text-white px-6 py-2 rounded-xl font-bold shadow-sm">儲存</button>
+                <button onclick="addWater(300)" class="flex-1 bg-blue-500 text-white py-2 rounded-xl font-bold shadow-sm active:scale-95 transition text-sm">+ 300cc</button>
+                <button onclick="addWater(500)" class="flex-1 bg-blue-600 text-white py-2 rounded-xl font-bold shadow-sm active:scale-95 transition text-sm">+ 500cc</button>
+                <button onclick="resetWater()" class="bg-gray-100 text-gray-400 px-3 rounded-xl text-xs">重置</button>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-            <h2 class="font-bold mb-4 text-gray-700 text-center">減重進度分析</h2>
-            <canvas id="weightChart" class="mb-6"></canvas>
-            <h2 class="font-bold mb-4 text-gray-700 text-center">三大營養素佔比</h2>
-            <canvas id="nutrientPieChart"></canvas>
+        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
+            <h2 class="font-bold mb-3 text-sm">🥗 記錄飲食</h2>
+            <div class="flex gap-2">
+                <input type="text" id="foodInput" placeholder="輸入食材 (中文可)" class="flex-1 border border-gray-100 p-2 rounded-xl text-sm outline-none focus:border-green-400">
+                <button onclick="handleSearch()" class="bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-sm">搜尋</button>
+            </div>
+            <p id="translateStatus" class="text-[10px] text-blue-400 mt-1 hidden"></p>
+            <div id="searchResult" class="hidden mt-3 bg-gray-50 p-3 rounded-2xl flex justify-between items-center border border-dashed border-gray-200">
+                <div>
+                    <p id="resName" class="text-sm font-bold text-gray-700"></p>
+                    <p id="resInfo" class="text-[10px] text-gray-400"></p>
+                </div>
+                <button onclick="addToDiary()" class="bg-blue-500 text-white px-4 py-1 rounded-full text-xs font-bold">+ 加入</button>
+            </div>
         </div>
+
+        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
+            <h2 class="font-bold mb-3 text-sm">⚖️ 體重記錄</h2>
+            <div class="flex gap-2 mb-4">
+                <input type="number" id="weightInput" step="0.1" placeholder="kg" class="flex-1 border border-gray-100 p-2 rounded-xl text-sm outline-none">
+                <button onclick="saveWeight()" class="bg-orange-400 text-white px-6 py-2 rounded-xl font-bold text-sm">儲存</button>
+            </div>
+            <canvas id="weightChart" height="150"></canvas>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
+            <button onclick="toggleHistory()" class="w-full flex justify-between items-center font-bold text-sm text-gray-600">
+                <span>📅 歷史紀錄 (7天)</span>
+                <span id="historyArrow">▼</span>
+            </button>
+            <div id="historyList" class="hidden mt-4 space-y-2 text-xs text-gray-500"></div>
+        </div>
+        
+        <p class="text-[10px] text-center text-gray-300">資料儲存於本地瀏覽器</p>
     </div>
 
     <script>
         const APP_ID = '3b185717';
         const APP_KEY = '023d04b5d811e3b080c6e899752092b8';
-        let tempFood = null;
-        let weightChart, pieChart;
-
+        const MY_HEIGHT = 167;
+        const MY_AGE = 31;
+        
         let todayStr = new Date().toLocaleDateString();
+        let diary = JSON.parse(localStorage.getItem('mifa_diary')) || { kcal:0, pro:0, carb:0, fat:0, water:0, date: todayStr };
+        let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
+        let diaryHistory = JSON.parse(localStorage.getItem('mifa_diary_history')) || [];
+        let tempFood = null, weightChart;
+
         document.getElementById('currentDate').innerText = todayStr;
 
-        let diary = JSON.parse(localStorage.getItem('mifa_diary')) || { kcal:0, pro:0, carb:0, fat:0, date: todayStr };
-        let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
-
-        if(diary.date !== todayStr) clearToday();
-
-        // --- 新增：翻譯功能 ---
-        async function translateChineseToEnglish(text) {
-            // 如果輸入已經是英文字母，不翻譯
-            if (/^[a-zA-Z\s]+$/.test(text)) return text;
-            
-            document.getElementById('translateStatus').innerText = `正在翻譯 "${text}"...`;
-            document.getElementById('translateStatus').classList.remove('hidden');
-
-            try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(text)}`);
-                const data = await res.json();
-                return data[0][0][0];
-            } catch (e) {
-                console.error("翻譯出錯", e);
-                return text; // 失敗則回傳原字串
+        window.onload = () => {
+            if(diary.date !== todayStr) {
+                diaryHistory.push({...diary});
+                if(diaryHistory.length > 7) diaryHistory.shift();
+                localStorage.setItem('mifa_diary_history', JSON.stringify(diaryHistory));
+                resetTodayData();
             }
+            updateUI();
+            updateCharts();
+            renderHistory();
+        };
+
+        function updateUI() {
+            const lastWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length-1].val : 60;
+            const bmr = (10 * lastWeight) + (6.25 * MY_HEIGHT) - (5 * MY_AGE) - 161;
+            const tdee = Math.round(bmr * 1.2); 
+            const targetKcal = tdee - 350;
+            const targetWater = Math.round(lastWeight * 35); // 建議水量 = 體重 x 35cc
+
+            // 更新熱量進度
+            const kcalPercent = Math.min(Math.round((diary.kcal / targetKcal) * 100), 100);
+            document.getElementById('kcalBar').style.width = kcalPercent + '%';
+            document.getElementById('kcalPercent').innerText = kcalPercent + '%';
+            document.getElementById('kcalText').innerText = `${Math.round(diary.kcal)} / ${targetKcal} kcal`;
+            document.getElementById('tdeeGoalText').innerText = `TDEE: ${tdee} | 目標: ${targetKcal}`;
+
+            // 更新營養素
+            document.getElementById('totalPro').innerText = diary.pro.toFixed(1) + 'g';
+            document.getElementById('totalCarb').innerText = diary.carb.toFixed(1) + 'g';
+            document.getElementById('totalFat').innerText = diary.fat.toFixed(1) + 'g';
+
+            // 更新飲水進度
+            const waterPercent = Math.min(Math.round((diary.water / targetWater) * 100), 100);
+            document.getElementById('waterBar').style.width = waterPercent + '%';
+            document.getElementById('waterText').innerText = `${diary.water} / ${targetWater} cc`;
         }
 
         async function handleSearch() {
-            const rawInput = document.getElementById('foodInput').value;
-            if(!rawInput) return;
-
-            const translatedInput = await translateChineseToEnglish(rawInput);
-            document.getElementById('translateStatus').innerText = `搜尋英文關鍵字: ${translatedInput}`;
+            const raw = document.getElementById('foodInput').value;
+            if(!raw) return;
+            const status = document.getElementById('translateStatus');
+            status.classList.remove('hidden'); status.innerText = "🔍 搜尋中...";
             
-            searchFood(translatedInput);
-        }
-
-        async function searchFood(englishText) {
-            try {
-                const res = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${englishText}&nutrition-type=logging`);
-                const data = await res.json();
-                if(data.hints[0]) {
-                    const f = data.hints[0].food;
-                    tempFood = f.nutrients;
-                    document.getElementById('searchResult').classList.remove('hidden');
-                    document.getElementById('resName').innerText = f.label;
-                    document.getElementById('resInfo').innerText = `${Math.round(tempFood.ENERC_KCAL)} kcal / 100g`;
-                } else {
-                    alert("找不到該食材的營養資料，試試更精確的名稱？");
-                }
-            } catch (e) { alert("連線失敗！"); }
-            finally { 
-                setTimeout(() => document.getElementById('translateStatus').classList.add('hidden'), 2000);
+            let query = raw;
+            if (!/^[a-zA-Z\s]+$/.test(raw)) {
+                try {
+                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(raw)}`);
+                    const data = await res.json();
+                    query = data[0][0][0];
+                } catch(e) { console.error("翻譯失敗"); }
             }
+            
+            try {
+                const resFood = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${query}&nutrition-type=logging`);
+                const foodData = await resFood.json();
+                if(foodData.hints[0]) {
+                    tempFood = foodData.hints[0].food.nutrients;
+                    document.getElementById('searchResult').classList.remove('hidden');
+                    document.getElementById('resName').innerText = foodData.hints[0].food.label;
+                    document.getElementById('resInfo').innerText = `${Math.round(tempFood.ENERC_KCAL)} kcal / 100g`;
+                }
+            } catch(e) { alert("搜尋失敗"); }
+            status.classList.add('hidden');
         }
 
-        // --- 原有邏輯 ---
         function addToDiary() {
-            if(!tempFood) return;
             diary.kcal += tempFood.ENERC_KCAL;
             diary.pro += tempFood.PROCNT;
             diary.carb += tempFood.CHOCDF;
             diary.fat += tempFood.FAT;
-            saveAndRefresh();
+            saveDiary();
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('foodInput').value = '';
+        }
+
+        function addWater(amount) {
+            diary.water += amount;
+            saveDiary();
+        }
+
+        function resetWater() {
+            if(confirm("確定要重置今日飲水量嗎？")) {
+                diary.water = 0;
+                saveDiary();
+            }
+        }
+
+        function saveDiary() {
+            localStorage.setItem('mifa_diary', JSON.stringify(diary));
+            updateUI();
         }
 
         function saveWeight() {
@@ -146,57 +211,55 @@
             weightHistory.push({ date: new Date().toLocaleDateString().slice(5), val: parseFloat(val) });
             localStorage.setItem('mifa_weight', JSON.stringify(weightHistory));
             updateCharts();
-            alert("體重已存檔！");
-        }
-
-        function saveAndRefresh() {
-            localStorage.setItem('mifa_diary', JSON.stringify(diary));
             updateUI();
-            updateCharts();
+            alert("體重已記錄");
         }
 
-        function updateUI() {
-            document.getElementById('totalKcal').innerText = Math.round(diary.kcal);
-            document.getElementById('totalPro').innerText = diary.pro.toFixed(1);
-            document.getElementById('totalCarb').innerText = diary.carb.toFixed(1);
-            document.getElementById('totalFat').innerText = diary.fat.toFixed(1);
-            const ratio = (diary.pro * 4 / (diary.kcal || 1)) * 100;
-            document.getElementById('insight').innerText = ratio > 20 ? "🥗 蛋白質充足！" : "🍗 補點蛋白質吧？";
+        function toggleHistory() {
+            const list = document.getElementById('historyList');
+            const arrow = document.getElementById('historyArrow');
+            list.classList.toggle('hidden');
+            arrow.innerText = list.classList.contains('hidden') ? "▼" : "▲";
         }
 
-        function clearToday() {
-            diary = { kcal:0, pro:0, carb:0, fat:0, date: todayStr };
-            saveAndRefresh();
+        function renderHistory() {
+            document.getElementById('historyList').innerHTML = diaryHistory.map(h => `
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+                    <span>${h.date}</span>
+                    <span class="font-bold text-gray-700">${Math.round(h.kcal)} kcal</span>
+                    <span class="text-blue-400">${h.water} cc</span>
+                </div>
+            `).join('') || "尚無歷史紀錄";
         }
 
         function updateCharts() {
             if(weightChart) weightChart.destroy();
-            if(pieChart) pieChart.destroy();
-
-            const ctxW = document.getElementById('weightChart').getContext('2d');
-            weightChart = new Chart(ctxW, {
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            weightChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: weightHistory.map(h => h.date).slice(-7),
-                    datasets: [{ label: '體重 (kg)', data: weightHistory.map(h => h.val).slice(-7), borderColor: '#fb923c', backgroundColor: '#fb923c33', fill: true, tension: 0.4 }]
-                }
-            });
-
-            const ctxP = document.getElementById('nutrientPieChart').getContext('2d');
-            pieChart = new Chart(ctxP, {
-                type: 'doughnut',
-                data: {
-                    labels: ['蛋白質', '碳水', '脂肪'],
-                    datasets: [{ data: [diary.pro, diary.carb, diary.fat], backgroundColor: ['#3b82f6', '#ca8a04', '#f87171'], borderWidth: 0 }]
+                    datasets: [{ 
+                        label: '體重 (kg)', 
+                        data: weightHistory.map(h => h.val).slice(-7), 
+                        borderColor: '#fb923c', 
+                        backgroundColor: '#fb923c22',
+                        fill: true,
+                        tension: 0.4 
+                    }]
                 },
-                options: { plugins: { legend: { position: 'bottom' } } }
+                options: { plugins: { legend: { display: false } } }
             });
         }
 
-        window.onload = () => {
-            updateUI();
-            updateCharts();
-        };
+        function resetTodayData() {
+            diary = { kcal:0, pro:0, carb:0, fat:0, water:0, date: todayStr };
+            saveDiary();
+        }
+
+        function clearToday() {
+            if(confirm("確定要清除今日所有數據嗎？")) resetTodayData();
+        }
     </script>
 </body>
 </html>
