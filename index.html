@@ -3,99 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mifa Fit Pro - 穩定修復版</title>
+    <title>2026 FIT - 智能管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .progress-fill { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .progress-fill { transition: width 0.8s ease-out; }
+        body { background-color: #f9fafb; color: #1e293b; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen pb-24 text-gray-800">
+<body class="min-h-screen pb-10">
 
-    <div class="max-w-md mx-auto p-4 space-y-4">
-        <header class="text-center py-4">
-            <h1 class="text-3xl font-extrabold text-green-600">Mifa Fit Pro</h1>
-            <p id="currentDate" class="text-gray-500 font-medium text-sm"></p>
+    <div class="max-w-4xl mx-auto p-4 space-y-6">
+        <header class="flex justify-between items-center py-6 px-2">
+            <h1 class="text-4xl font-black text-slate-800 tracking-tighter">2026 <span class="text-blue-600">FIT</span></h1>
+            <div class="text-right">
+                <p id="currentDate" class="text-slate-500 font-bold text-lg"></p>
+                <p class="text-xs text-slate-400 uppercase tracking-widest">Smart Weight Control</p>
+            </div>
         </header>
 
-        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
-            <div class="flex justify-between items-end mb-2">
-                <h2 class="text-gray-700 font-bold">今日熱量進度</h2>
-                <span id="kcalPercent" class="text-xs font-bold text-green-600">0%</span>
-            </div>
-            <div class="w-full bg-gray-100 rounded-full h-3 mb-2">
-                <div id="kcalBar" class="bg-green-500 h-3 rounded-full progress-fill" style="width: 0%"></div>
-            </div>
-            <div class="flex justify-between text-[10px] text-gray-400">
-                <p id="tdeeGoalText">計算中...</p>
-                <p id="kcalText">0 / 0 kcal</p>
-            </div>
-            
-            <div class="grid grid-cols-4 gap-2 mt-4">
-                <div class="bg-blue-50 p-2 rounded-xl text-center"><p class="text-[10px] text-blue-400">蛋白</p><p id="totalPro" class="text-xs font-bold">0g</p></div>
-                <div class="bg-yellow-50 p-2 rounded-xl text-center"><p class="text-[10px] text-yellow-600">碳水</p><p id="totalCarb" class="text-xs font-bold">0g</p></div>
-                <div class="bg-red-50 p-2 rounded-xl text-center"><p class="text-[10px] text-red-400">脂肪</p><p id="totalFat" class="text-xs font-bold">0g</p></div>
-                <div class="bg-cyan-50 p-2 rounded-xl text-center"><p class="text-[10px] text-cyan-400">飲水</p><p id="totalWater" class="text-xs font-bold">0cc</p></div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
-            <h2 class="font-bold mb-3 text-sm">🥗 搜尋飲食 (可輸入中文)</h2>
-            <div class="flex gap-2 mb-2">
-                <input type="text" id="foodInput" placeholder="輸入食材" class="flex-1 border border-gray-100 p-2 rounded-xl text-sm outline-none">
-                <button onclick="handleSearch()" class="bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-sm">搜尋</button>
-            </div>
-            <div id="searchResult" class="hidden mt-3 bg-gray-50 p-4 rounded-2xl border border-dashed border-gray-200">
-                <div class="flex justify-between items-center mb-3">
-                    <p id="resName" class="text-sm font-bold text-gray-700"></p>
+        <div class="glass-card p-8 bg-slate-900 text-white border-none">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex-1 w-full">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-slate-400 font-bold text-sm">今日熱量攝取進度</span>
+                        <span id="kcalPercent" class="text-blue-400 font-black">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-4">
+                        <div id="kcalBar" class="bg-blue-500 h-4 rounded-full progress-fill shadow-[0_0_15px_rgba(59,130,246,0.5)]" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between mt-3">
+                        <p id="kcalText" class="text-2xl font-black">0 / 0 <span class="text-sm font-normal text-slate-400">kcal</span></p>
+                        <p id="tdeeGoalText" class="text-xs text-slate-400 self-center"></p>
+                    </div>
                 </div>
-                <div class="flex gap-2 items-center">
-                    <input type="number" id="foodAmount" value="100" class="w-20 border p-2 rounded-lg text-sm text-center">
-                    <span class="text-xs text-gray-400">克 (g)</span>
-                    <button onclick="addToDiary()" class="flex-1 bg-blue-500 text-white py-2 rounded-xl text-xs font-bold shadow-md">+ 加入</button>
+                <div class="grid grid-cols-3 gap-4 w-full md:w-auto">
+                    <div class="text-center px-4 border-r border-slate-800">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">蛋白質</p>
+                        <p id="totalPro" class="text-lg font-bold">0g</p>
+                    </div>
+                    <div class="text-center px-4 border-r border-slate-800">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">碳水</p>
+                        <p id="totalCarb" class="text-lg font-bold">0g</p>
+                    </div>
+                    <div class="text-center px-4">
+                        <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">脂肪</p>
+                        <p id="totalFat" class="text-lg font-bold">0g</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
-            <h2 class="font-bold mb-3 text-sm">📝 今日明細 (點擊可刪除單筆)</h2>
-            <div id="todayItems" class="space-y-2 mb-4"></div>
-            <div class="grid grid-cols-2 gap-2 pt-3 border-t">
-                <button onclick="addWater(300)" class="bg-cyan-500 text-white py-2 rounded-xl text-xs font-bold">+ 300cc 水</button>
-                <button onclick="saveWeight()" class="bg-orange-400 text-white py-2 rounded-xl text-xs font-bold">存體重</button>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-5 space-y-6">
+                <div class="glass-card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2">💧 飲水追蹤</h3>
+                        <span id="totalWater" class="text-blue-600 font-bold">0cc</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="addWater(300)" class="flex-1 bg-slate-100 hover:bg-blue-500 hover:text-white text-slate-600 py-3 rounded-2xl font-bold transition-all text-sm">+ 300cc</button>
+                        <button onclick="addWater(500)" class="flex-1 bg-slate-100 hover:bg-blue-500 hover:text-white text-slate-600 py-3 rounded-2xl font-bold transition-all text-sm">+ 500cc</button>
+                    </div>
+                </div>
+                <div class="glass-card p-6">
+                    <h3 class="font-bold text-slate-700 mb-4">⚖️ 體重更新</h3>
+                    <div class="flex gap-2">
+                        <input type="number" id="weightInput" step="0.1" placeholder="kg" class="flex-1 bg-slate-50 border-none p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="saveWeight()" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition">儲存</button>
+                    </div>
+                </div>
             </div>
-            <input type="number" id="weightInput" step="0.1" placeholder="輸入體重 kg" class="w-full mt-2 border border-gray-100 p-2 rounded-xl text-sm outline-none">
+
+            <div class="md:col-span-7 space-y-6">
+                <div class="glass-card p-6 min-h-[400px] flex flex-col">
+                    <h3 class="font-bold text-slate-700 mb-4">🔍 飲食搜尋</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="foodInput" placeholder="輸入搜尋食材..." class="flex-1 bg-slate-50 border-none p-3 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                        <button onclick="handleSearch()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg active:scale-95 transition">搜尋</button>
+                    </div>
+
+                    <div id="searchResult" class="hidden bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <p id="resName" class="font-bold text-blue-900"></p>
+                            <span class="text-[10px] text-blue-400 uppercase font-bold">Nutrients Found</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="number" id="foodAmount" value="100" class="w-24 p-2 rounded-xl border-none outline-none text-center font-bold">
+                            <button onclick="addToDiary()" class="flex-1 bg-blue-600 text-white py-2 rounded-xl font-bold text-sm shadow-md">確認加入</button>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto pr-2">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">今日攝取明細 (點擊刪除)</p>
+                        <div id="todayItems" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm p-5 border border-gray-100">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-bold text-sm text-gray-600">📉 體重趨勢</h2>
-                <button onclick="deleteLastWeight()" class="text-[10px] text-red-400">刪除最後一筆</button>
+        <div class="glass-card p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-700">📉 體重變化趨勢</h3>
+                <button onclick="deleteLastWeight()" class="text-xs text-slate-400 hover:text-red-500 transition">刪除最後一筆</button>
             </div>
-            <canvas id="weightChart" height="150"></canvas>
+            <div class="h-[250px]">
+                <canvas id="weightChart"></canvas>
+            </div>
         </div>
-        
-        <button onclick="clearEverything()" class="w-full text-center text-[10px] text-red-200 py-4 italic">清空所有資料並重置</button>
+
+        <footer class="text-center flex justify-center gap-4">
+            <button onclick="clearEverything()" class="text-[10px] text-slate-300 hover:text-red-300 transition uppercase tracking-widest">Reset Database</button>
+        </footer>
     </div>
 
     <script>
         const APP_ID = '3b185717';
         const APP_KEY = '023d04b5d811e3b080c6e899752092b8';
         const MY_HEIGHT = 167; const MY_AGE = 31;
+        
+        // 自動更新時間
+        const updateTime = () => {
+            const now = new Date();
+            document.getElementById('currentDate').innerText = now.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+        };
+        updateTime();
+
+        let diary = JSON.parse(localStorage.getItem('mifa_diary'));
         const todayStr = new Date().toLocaleDateString();
 
-        document.getElementById('currentDate').innerText = todayStr;
-
-        // 【核心邏輯：自動修復與資料初始化】
-        let diary = JSON.parse(localStorage.getItem('mifa_diary'));
-        // 如果 diary 不存在，或者舊版的格式（沒有 items 陣列），則強制重置為新版格式
-        if (!diary || !Array.isArray(diary.items)) {
-            diary = { items: [], water: 0, date: todayStr };
-            localStorage.setItem('mifa_diary', JSON.stringify(diary));
-        }
-        
-        // 如果換天了，清空今日清單
-        if (diary.date !== todayStr) {
+        if (!diary || !Array.isArray(diary.items) || diary.date !== todayStr) {
             diary = { items: [], water: 0, date: todayStr };
             localStorage.setItem('mifa_diary', JSON.stringify(diary));
         }
@@ -103,8 +141,7 @@
         let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
         let tempNutrients = null, weightChart = null;
 
-        // 【動作與儲存】
-        function syncAndRefresh() {
+        function sync() {
             localStorage.setItem('mifa_diary', JSON.stringify(diary));
             localStorage.setItem('mifa_weight', JSON.stringify(weightHistory));
             updateUI();
@@ -115,7 +152,6 @@
             const raw = document.getElementById('foodInput').value;
             if(!raw) return;
             let query = raw;
-            // 中翻英
             if (!/^[a-zA-Z\s]+$/.test(raw)) {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(raw)}`);
                 const data = await res.json();
@@ -132,50 +168,41 @@
         }
 
         function addToDiary() {
-            if(!tempNutrients) return;
             const amt = parseFloat(document.getElementById('foodAmount').value) || 100;
-            const factor = amt / 100;
             diary.items.push({
                 id: Date.now(),
                 name: document.getElementById('resName').innerText,
-                kcal: tempNutrients.ENERC_KCAL * factor,
-                pro: tempNutrients.PROCNT * factor,
-                carb: tempNutrients.CHOCDF * factor,
-                fat: tempNutrients.FAT * factor,
+                kcal: tempNutrients.ENERC_KCAL * (amt/100),
+                pro: tempNutrients.PROCNT * (amt/100),
+                carb: tempNutrients.CHOCDF * (amt/100),
+                fat: tempNutrients.FAT * (amt/100),
                 amt: amt
             });
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('foodInput').value = '';
-            syncAndRefresh();
+            sync();
         }
 
         function deleteItem(id) {
             diary.items = diary.items.filter(i => i.id !== id);
-            syncAndRefresh();
+            sync();
         }
 
-        function addWater(cc) {
-            diary.water += cc;
-            syncAndRefresh();
-        }
+        function addWater(cc) { diary.water += cc; sync(); }
 
         function saveWeight() {
             const val = document.getElementById('weightInput').value;
             if(!val) return;
             weightHistory.push({ date: new Date().toLocaleDateString().slice(5), val: parseFloat(val) });
             document.getElementById('weightInput').value = '';
-            syncAndRefresh();
+            sync();
         }
 
         function deleteLastWeight() {
-            if(weightHistory.length > 0 && confirm("刪除最後一筆體重？")) {
-                weightHistory.pop();
-                syncAndRefresh();
-            }
+            if(weightHistory.length > 0 && confirm("確定刪除？")) { weightHistory.pop(); sync(); }
         }
 
         function updateUI() {
-            // 計算總和
             const sums = diary.items.reduce((acc, cur) => {
                 acc.kcal += cur.kcal; acc.pro += cur.pro; acc.carb += cur.carb; acc.fat += cur.fat;
                 return acc;
@@ -186,21 +213,20 @@
 
             document.getElementById('kcalPercent').innerText = Math.round(sums.kcal/targetKcal*100) + '%';
             document.getElementById('kcalBar').style.width = Math.min((sums.kcal/targetKcal*100), 100) + '%';
-            document.getElementById('kcalText').innerText = `${Math.round(sums.kcal)} / ${targetKcal} kcal`;
-            document.getElementById('tdeeGoalText').innerText = `基於 ${lastW}kg 的目標`;
-            document.getElementById('totalPro').innerText = sums.pro.toFixed(1) + 'g';
-            document.getElementById('totalCarb').innerText = sums.carb.toFixed(1) + 'g';
-            document.getElementById('totalFat').innerText = sums.fat.toFixed(1) + 'g';
+            document.getElementById('kcalText').innerText = `${Math.round(sums.kcal)} / ${targetKcal}`;
+            document.getElementById('tdeeGoalText').innerText = `目標基準: ${lastW}kg`;
+            document.getElementById('totalPro').innerText = Math.round(sums.pro) + 'g';
+            document.getElementById('totalCarb').innerText = Math.round(sums.carb) + 'g';
+            document.getElementById('totalFat').innerText = Math.round(sums.fat) + 'g';
             document.getElementById('totalWater').innerText = diary.water + 'cc';
 
-            // 明細列表
             const list = document.getElementById('todayItems');
             list.innerHTML = diary.items.map(i => `
-                <div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-gray-50 p-2 rounded-xl cursor-pointer hover:bg-red-50 text-xs">
-                    <span>${i.name} (${i.amt}g)</span>
-                    <span class="font-bold text-gray-400">${Math.round(i.kcal)} kcal ×</span>
+                <div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-slate-50 p-3 rounded-xl cursor-pointer hover:bg-red-50 group transition-all">
+                    <span class="text-slate-600 font-medium text-sm">${i.name} <span class="text-[10px] text-slate-400">(${i.amt}g)</span></span>
+                    <span class="font-bold text-slate-400 group-hover:text-red-400 transition-colors">${Math.round(i.kcal)} kcal</span>
                 </div>
-            `).join('') || '<p class="text-[10px] text-center py-2 italic text-gray-300">目前無紀錄</p>';
+            `).join('') || '<p class="text-xs text-center py-10 text-slate-300 italic">No meals logged yet today.</p>';
         }
 
         function updateCharts() {
@@ -210,17 +236,29 @@
                 type: 'line',
                 data: {
                     labels: weightHistory.map(h => h.date).slice(-7),
-                    datasets: [{ label: '體重', data: weightHistory.map(h => h.val).slice(-7), borderColor: '#fb923c', backgroundColor: '#fb923c22', fill: true, tension: 0.4 }]
+                    datasets: [{ 
+                        label: 'Weight (kg)', 
+                        data: weightHistory.map(h => h.val).slice(-7), 
+                        borderColor: '#3b82f6', 
+                        borderWidth: 3,
+                        backgroundColor: (context) => {
+                            const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+                            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                            return gradient;
+                        },
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
                 },
-                options: { plugins: { legend: { display: false } } }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } } }
             });
         }
 
-        function clearEverything() {
-            if(confirm("確定清空所有資料庫？")) { localStorage.clear(); location.reload(); }
-        }
+        function clearEverything() { if(confirm("確定重置所有資料庫？")) { localStorage.clear(); location.reload(); } }
 
-        // 初始化
         updateUI();
         updateCharts();
     </script>
