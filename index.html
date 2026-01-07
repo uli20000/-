@@ -37,7 +37,7 @@
                     <div id="kcalBar" class="sky-accent h-full rounded-full progress-bar" style="width: 0%"></div>
                 </div>
                 <div class="flex justify-between items-baseline">
-                    <p id="kcalText" class="text-5xl font-black italic tracking-tighter">0 <span class="text-lg not-italic text-slate-500 ml-2">/ 0 kcal</span></p>
+                    <p id="kcalText" class="text-5xl font-black italic tracking-tighter">0 <span class="text-xl text-slate-500 italic ml-2">/ 0 kcal</span></p>
                     <p id="tdeeGoalText" class="text-xs text-slate-600 font-bold italic"></p>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                 <div class="w-full bg-slate-800/50 rounded-full h-5 overflow-hidden p-1">
                     <div id="waterBar" class="bg-gradient-to-r from-cyan-400 to-blue-500 h-full rounded-full progress-bar" style="width: 0%"></div>
                 </div>
-                <p id="waterText" class="text-5xl font-black italic tracking-tighter">0 <span class="text-lg not-italic text-slate-500 ml-2">/ 3500 cc</span></p>
+                <p id="waterText" class="text-5xl font-black italic tracking-tighter">0 <span class="text-xl text-slate-500 italic ml-2">/ 3500 cc</span></p>
             </div>
 
             <div class="flex justify-between pt-6 border-t border-slate-800/30 px-2">
@@ -66,7 +66,7 @@
                 <h3 class="font-black text-slate-700">飲食搜尋與明細</h3>
             </div>
             <div class="flex gap-2">
-                <input type="text" id="foodInput" placeholder="輸入食材 (例如: Apple)" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-sky-100 transition">
+                <input type="text" id="foodInput" placeholder="輸入食材中文或英文" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-sky-100 transition">
                 <button onclick="handleSearch()" class="sky-accent text-white px-6 rounded-2xl font-black shadow-lg active:scale-95 transition">搜尋</button>
             </div>
 
@@ -102,14 +102,19 @@
         <div class="glass-card p-7">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-sm font-black text-slate-700 uppercase italic">趨勢分析</h3>
-                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">刪除最後一筆體重</button>
+                <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">刪除最後一筆</button>
             </div>
             <div class="h-64">
                 <canvas id="weightChart"></canvas>
             </div>
         </div>
 
-        <button onclick="if(confirm('確定重置？')) {localStorage.clear(); location.reload();}" class="w-full text-[10px] text-slate-300 font-black tracking-[0.3em] py-8">SYSTEM RESET</button>
+        <div class="flex flex-col gap-4 mt-8 px-4 text-center">
+            <button onclick="exportToExcel()" class="w-full sky-accent text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition">
+                📊 導出數據成 Excel (CSV)
+            </button>
+            <button onclick="if(confirm('確定重置？')) {localStorage.clear(); location.reload();}" class="text-[10px] text-slate-300 font-black tracking-[0.3em] py-4">SYSTEM RESET</button>
+        </div>
     </div>
 
     <script>
@@ -127,7 +132,7 @@
         }
 
         let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
-        let tempNutrients = null, weightChart = null;
+        let tempNutrients = null, weightChart = null, lastChineseInput = "";
 
         function sync() {
             localStorage.setItem('mifa_diary', JSON.stringify(diary));
@@ -139,40 +144,46 @@
         async function handleSearch() {
             const raw = document.getElementById('foodInput').value;
             if(!raw) return;
+            lastChineseInput = raw; // 記住妳輸入的中文
+            
             let query = raw;
             if (!/^[a-zA-Z\s]+$/.test(raw)) {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(raw)}`);
                 const data = await res.json();
                 query = data[0][0][0];
             }
+            
             const resFood = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${query}`);
             const foodData = await resFood.json();
             if(foodData.hints && foodData.hints[0]) {
                 const f = foodData.hints[0].food;
                 tempNutrients = f.nutrients;
                 document.getElementById('searchResult').classList.remove('hidden');
-                document.getElementById('resName').innerText = f.label;
-                document.getElementById('foodAmount').value = '';
+                document.getElementById('resName').innerText = lastChineseInput; // 顯示中文
+                document.getElementById('foodAmount').value = ''; 
             }
         }
 
         function addToDiary() {
             const amt = parseFloat(document.getElementById('foodAmount').value);
             if(!amt) { alert('請輸入克數'); return; }
-            diary.items.push({ id: Date.now(), name: document.getElementById('resName').innerText, kcal: tempNutrients.ENERC_KCAL * (amt/100), pro: tempNutrients.PROCNT * (amt/100), carb: tempNutrients.CHOCDF * (amt/100), fat: tempNutrients.FAT * (amt/100), amt: amt });
+            diary.items.push({ 
+                id: Date.now(), 
+                name: lastChineseInput, // 儲存妳輸入的中文
+                kcal: tempNutrients.ENERC_KCAL * (amt/100), 
+                pro: tempNutrients.PROCNT * (amt/100), 
+                carb: tempNutrients.CHOCDF * (amt/100), 
+                fat: tempNutrients.FAT * (amt/100), 
+                amt: amt 
+            });
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('foodInput').value = '';
             sync();
         }
 
         function deleteItem(id) { diary.items = diary.items.filter(i => i.id !== id); sync(); }
+        function addWater(cc) { diary.water += cc; if(diary.water < 0) diary.water = 0; sync(); }
         
-        function addWater(cc) { 
-            diary.water += cc; 
-            if(diary.water < 0) diary.water = 0; // 防止扣成負數
-            sync(); 
-        }
-
         function saveWeight() {
             const val = document.getElementById('weightInput').value;
             if(!val) return;
@@ -180,7 +191,21 @@
             document.getElementById('weightInput').value = '';
             sync();
         }
-        function deleteLastWeight() { if(weightHistory.length > 0 && confirm("刪除最後一筆？")) { weightHistory.pop(); sync(); } }
+
+        function exportToExcel() {
+            let csvContent = "\uFEFF"; // 解決 Excel 中文亂碼
+            csvContent += "--- 體重趨勢紀錄 ---\n日期,體重(kg)\n";
+            weightHistory.forEach(h => { csvContent += `${h.date},${h.val}\n`; });
+            csvContent += "\n--- 今日飲食明細 (${diary.date}) ---\n名稱,克數,熱量(kcal),蛋白質(g),碳水(g),脂肪(g)\n";
+            diary.items.forEach(i => {
+                csvContent += `${i.name},${i.amt},${Math.round(i.kcal)},${Math.round(i.pro)},${Math.round(i.carb)},${Math.round(i.fat)}\n`;
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Mifa_FIT_Data_${new Date().toLocaleDateString()}.csv`;
+            link.click();
+        }
 
         function updateUI() {
             const sums = diary.items.reduce((acc, cur) => { acc.kcal += cur.kcal; acc.pro += cur.pro; acc.carb += cur.carb; acc.fat += cur.fat; return acc; }, {kcal:0, pro:0, carb:0, fat:0});
@@ -189,12 +214,12 @@
 
             document.getElementById('kcalPercent').innerText = Math.round(sums.kcal/targetKcal*100) + '%';
             document.getElementById('kcalBar').style.width = Math.min((sums.kcal/targetKcal*100), 100) + '%';
-            document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-xl text-slate-500 italic ml-1">/ ${targetKcal} kcal</span>`;
+            document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-xl text-slate-500 italic ml-2">/ ${targetKcal} kcal</span>`;
             document.getElementById('tdeeGoalText').innerText = `基準體重: ${lastW}kg`;
             
             document.getElementById('waterPercent').innerText = Math.round(diary.water/waterGoal*100) + '%';
             document.getElementById('waterBar').style.width = Math.min((diary.water/waterGoal*100), 100) + '%';
-            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xl text-slate-500 italic ml-1">/ 3500 cc</span>`;
+            document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-xl text-slate-500 italic ml-2">/ 3500 cc</span>`;
 
             document.getElementById('totalPro').innerText = Math.round(sums.pro) + 'g';
             document.getElementById('totalCarb').innerText = Math.round(sums.carb) + 'g';
@@ -226,6 +251,7 @@
                 options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { border: {display:false}, grid: { color: '#F1F5F9' } }, x: { grid: { display: false } } } }
             });
         }
+        function deleteLastWeight() { if(weightHistory.length > 0 && confirm("刪除最後一筆？")) { weightHistory.pop(); sync(); } }
 
         sync();
     </script>
