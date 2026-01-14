@@ -25,7 +25,7 @@
         <div class="dark-card p-8 shadow-2xl space-y-8">
             <div class="space-y-4">
                 <div class="flex justify-between items-end">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Daily Calorie Budget</span>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Calorie Budget</span>
                     <span id="kcalPercent" class="text-2xl font-black text-blue-400">0%</span>
                 </div>
                 <div class="w-full bg-slate-700/50 rounded-full h-4 p-1">
@@ -61,7 +61,7 @@
 
         <div class="glass-card p-6 flex items-center justify-between">
             <div class="space-y-1">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Water (Target 3000)</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Water Goal</p>
                 <p id="waterText" class="text-3xl font-black italic text-slate-700">0 <span class="text-sm text-slate-400 ml-1">/ 3000 cc</span></p>
             </div>
             <div class="flex gap-2">
@@ -72,13 +72,13 @@
 
         <div class="glass-card p-6 space-y-4">
             <div class="flex gap-2">
-                <input type="text" id="foodInput" placeholder="輸入..." class="w-full bg-slate-50 border-none p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100">
+                <input type="text" id="foodInput" placeholder="搜尋..." class="w-full bg-slate-50 border-none p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100">
                 <button onclick="handleSearch()" class="sky-accent text-white px-6 rounded-2xl font-black">搜尋</button>
             </div>
             <div id="searchResult" class="hidden bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
                 <p id="resName" class="font-black text-slate-600 text-sm mb-3 px-1"></p>
                 <div class="flex gap-2 items-center">
-                    <input type="number" id="foodAmount" placeholder="" class="w-20 p-2.5 rounded-xl border-none font-bold text-blue-600 text-sm shadow-inner">
+                    <input type="number" id="foodAmount" placeholder="..." class="w-20 p-2.5 rounded-xl border-none font-bold text-blue-600 text-sm shadow-inner">
                     <button onclick="addToDiary()" class="flex-1 sky-accent text-white py-2.5 rounded-xl font-black text-sm shadow-md">確認加入</button>
                 </div>
             </div>
@@ -86,9 +86,9 @@
         </div>
 
         <div class="glass-card p-6">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Weight Tracker</p>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Weight History</p>
             <div class="flex gap-3">
-                <input type="number" id="weightInput" step="0.1" placeholder="kg" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-lg font-bold outline-none">
+                <input type="number" id="weightInput" step="0.1" placeholder="今日體重 kg" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-lg font-bold outline-none">
                 <button onclick="saveWeight()" class="bg-slate-800 text-white px-8 rounded-2xl font-black shadow-lg">儲存</button>
             </div>
         </div>
@@ -98,14 +98,12 @@
                 <h3 class="text-sm font-black italic text-slate-700">體重趨勢分析</h3>
                 <button onclick="deleteLastWeight()" class="text-[10px] text-slate-300 font-bold hover:text-red-400">刪除最後一筆</button>
             </div>
-            <div class="h-64">
-                <canvas id="weightChart"></canvas>
-            </div>
+            <div class="h-64"><canvas id="weightChart"></canvas></div>
         </div>
 
         <div class="text-center pt-4">
-            <button onclick="exportToExcel()" class="w-full sky-accent text-white py-4 rounded-2xl font-black shadow-xl mb-4">📊 導出數據 Excel</button>
-            <p class="text-[10px] text-slate-300 font-black tracking-[0.4em] uppercase cursor-pointer" onclick="if(confirm('重置？')){localStorage.clear();location.reload();}">System Reset</p>
+            <button onclick="exportAllData()" class="w-full sky-accent text-white py-4 rounded-2xl font-black shadow-xl mb-4">📊 導出完整備份 CSV</button>
+            <p class="text-[10px] text-slate-300 font-black tracking-[0.4em] uppercase cursor-pointer" onclick="if(confirm('重置系統？')){localStorage.clear();location.reload();}">System Reset</p>
         </div>
     </div>
 
@@ -116,8 +114,11 @@
         const todayStr = new Date().toLocaleDateString();
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString('zh-TW', {year:'numeric', month:'long', day:'numeric'});
 
-        let diary = JSON.parse(localStorage.getItem('mifa_diary'));
-        if (!diary || diary.date !== todayStr) diary = { items: [], water: 0, date: todayStr };
+        let diary = JSON.parse(localStorage.getItem('mifa_diary')) || { items: [], water: 0, date: todayStr };
+        if (diary.date !== todayStr) {
+            saveToHistory(diary);
+            diary = { items: [], water: 0, date: todayStr };
+        }
         let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
         let tempNutrients = null, weightChart = null, lastChineseInput = "";
 
@@ -142,7 +143,7 @@
             if(foodData.hints && foodData.hints[0]) {
                 tempNutrients = foodData.hints[0].food.nutrients;
                 document.getElementById('searchResult').classList.remove('hidden');
-                document.getElementById('resName').innerText = `搜尋結果: ${lastChineseInput}`;
+                document.getElementById('resName').innerText = `已搜尋: ${lastChineseInput}`;
             }
         }
 
@@ -164,7 +165,7 @@
             document.getElementById('kcalPercent').innerText = Math.round(sums.kcal/targetKcal*100) + '%';
             document.getElementById('kcalBar').style.width = Math.min((sums.kcal/targetKcal*100), 100) + '%';
             document.getElementById('kcalText').innerHTML = `${Math.round(sums.kcal)} <span class="text-xl text-slate-500 italic ml-2">/ ${targetKcal}</span>`;
-            document.getElementById('tdeeGoalText').innerText = `目前基準: ${lastW}kg`;
+            document.getElementById('tdeeGoalText').innerText = `基準體重: ${lastW}kg`;
             
             const upNut = (id, cur, goal, bId) => {
                 document.getElementById(id).innerText = Math.round(cur) + 'g';
@@ -176,7 +177,7 @@
             upNut('totalFat', sums.fat, goalFat, 'fatBar');
             document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-sm text-slate-400 italic">/ ${WATER_GOAL} cc</span>`;
 
-            document.getElementById('todayItems').innerHTML = diary.items.map(i => `<div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100"><span class="text-slate-700 font-bold text-xs">${i.name} (${i.amt}g)</span><span class="font-black text-blue-500 text-xs">${Math.round(i.kcal)} kcal</span></div>`).join('');
+            document.getElementById('todayItems').innerHTML = diary.items.map(i => `<div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 px-4 py-3"><span class="text-slate-700 font-bold text-xs">${i.name} (${i.amt}g)</span><span class="font-black text-blue-500 text-xs">${Math.round(i.kcal)} kcal</span></div>`).join('');
         }
 
         function updateCharts() {
@@ -184,29 +185,40 @@
             const recent = weightHistory.slice(-7);
             if(weightChart) weightChart.destroy();
             const grad = ctx.createLinearGradient(0, 0, 0, 400);
-            grad.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
+            grad.addColorStop(0, 'rgba(59, 130, 246, 0.2)'); grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             weightChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: recent.map(h => h.date),
                     datasets: [{ 
                         data: recent.map(h => h.val), 
-                        borderColor: '#3B82F6', borderWidth: 3, 
-                        pointBackgroundColor: '#FFFFFF', pointBorderColor: '#3B82F6', pointBorderWidth: 2, pointRadius: 5,
-                        fill: true, backgroundColor: grad, tension: 0.4 
+                        borderColor: '#3B82F6', borderWidth: 3, pointBackgroundColor: '#FFFFFF', pointBorderColor: '#3B82F6', pointBorderWidth: 2, pointRadius: 5, fill: true, backgroundColor: grad, tension: 0.4 
                     }]
                 },
                 options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } },
-                    scales: { 
-                        y: { grid: { color: '#F1F5F9' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 10 } } }
-                    }
+                    maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: '#F1F5F9' }, ticks: { color: '#94A3B8', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 10 } } } }
                 }
             });
+        }
+
+        function saveToHistory(oldDiary) {
+            let history = JSON.parse(localStorage.getItem('mifa_food_history')) || [];
+            history.push(oldDiary);
+            if (history.length > 30) history.shift();
+            localStorage.setItem('mifa_food_history', JSON.stringify(history));
+        }
+
+        function exportAllData() {
+            let csv = "\uFEFF類別,日期,內容,數值,蛋白質,碳水,脂肪\n";
+            weightHistory.forEach(h => csv += `體重歷史,${h.date},體重數據,${h.val}kg,,,,\n`);
+            let history = JSON.parse(localStorage.getItem('mifa_food_history')) || [];
+            [...history, diary].forEach(day => {
+                day.items.forEach(i => { csv += `飲食明細,${day.date},${i.name},${i.amt}g,${Math.round(i.pro)}g,${Math.round(i.carb)}g,${Math.round(i.fat)}g\n`; });
+            });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+            link.download = `Mifa_FIT_Full_Data.csv`; link.click();
         }
 
         function deleteItem(id) { diary.items = diary.items.filter(i => i.id !== id); sync(); }
@@ -218,14 +230,7 @@
             document.getElementById('weightInput').value = '';
             sync();
         }
-        function deleteLastWeight() { if(confirm("刪除最後一筆？")) { weightHistory.pop(); sync(); } }
-        function exportToExcel() {
-            let csv = "\uFEFF日期,體重\n";
-            weightHistory.forEach(h => csv += `${h.date},${h.val}\n`);
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            link.download = `Mifa_FIT_Export.csv`; link.click();
-        }
+        function deleteLastWeight() { if(confirm("刪除最後一筆體重？")) { weightHistory.pop(); sync(); } }
         window.onload = sync;
     </script>
 </body>
