@@ -73,12 +73,16 @@
         <div class="glass-card p-6 space-y-4">
             <div class="flex gap-2">
                 <input type="text" id="foodInput" placeholder="搜尋..." class="w-full bg-slate-50 border-none p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-100">
-                <button onclick="handleSearch()" class="sky-accent text-white px-6 rounded-2xl font-black">搜尋</button>
+                <button id="searchBtn" onclick="handleSearch()" class="sky-accent text-white px-6 rounded-2xl font-black">搜尋</button>
             </div>
+            
             <div id="searchResult" class="hidden bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
-                <p id="resName" class="font-black text-slate-600 text-sm mb-3 px-1"></p>
+                <div class="mb-3 px-1">
+                    <p id="resNameZh" class="font-black text-slate-700 text-sm"></p>
+                    <p id="resNameEn" class="text-[10px] text-blue-400 font-bold italic"></p>
+                </div>
                 <div class="flex gap-2 items-center">
-                    <input type="number" id="foodAmount" placeholder="..." class="w-20 p-2.5 rounded-xl border-none font-bold text-blue-600 text-sm shadow-inner">
+                    <input type="number" id="foodAmount" placeholder="克數" class="w-20 p-2.5 rounded-xl border-none font-bold text-blue-600 text-sm shadow-inner">
                     <button onclick="addToDiary()" class="flex-1 sky-accent text-white py-2.5 rounded-xl font-black text-sm shadow-md">確認加入</button>
                 </div>
             </div>
@@ -88,7 +92,7 @@
         <div class="glass-card p-6">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Weight History</p>
             <div class="flex gap-3">
-                <input type="number" id="weightInput" step="0.1" placeholder=" kg " class="w-full bg-slate-50 border-none p-4 rounded-2xl text-lg font-bold outline-none">
+                <input type="number" id="weightInput" step="0.1" placeholder="kg" class="w-full bg-slate-50 border-none p-4 rounded-2xl text-lg font-bold outline-none">
                 <button onclick="saveWeight()" class="bg-slate-800 text-white px-8 rounded-2xl font-black shadow-lg">儲存</button>
             </div>
         </div>
@@ -102,8 +106,8 @@
         </div>
 
         <div class="text-center pt-4">
-            <button onclick="exportAllData()" class="w-full sky-accent text-white py-4 rounded-2xl font-black shadow-xl mb-4">📊 導出完整備份 CSV</button>
-            <p class="text-[10px] text-slate-300 font-black tracking-[0.4em] uppercase cursor-pointer" onclick="if(confirm('重置系統？')){localStorage.clear();location.reload();}">System Reset</p>
+            <button onclick="exportAllData()" class="w-full sky-accent text-white py-4 rounded-2xl font-black shadow-xl mb-4">📊 導出完整備份 (體重+歷史飲食)</button>
+            <p class="text-[10px] text-slate-300 font-black tracking-[0.4em] uppercase cursor-pointer" onclick="if(confirm('重置所有數據？')){localStorage.clear();location.reload();}">System Reset</p>
         </div>
     </div>
 
@@ -120,7 +124,7 @@
             diary = { items: [], water: 0, date: todayStr };
         }
         let weightHistory = JSON.parse(localStorage.getItem('mifa_weight')) || [];
-        let tempNutrients = null, weightChart = null, lastChineseInput = "";
+        let tempNutrients = null, weightChart = null, lastZhInput = "";
 
         function sync() {
             localStorage.setItem('mifa_diary', JSON.stringify(diary));
@@ -132,27 +136,34 @@
         async function handleSearch() {
             const raw = document.getElementById('foodInput').value;
             if(!raw) return;
-            lastChineseInput = raw;
-            let query = raw;
-            if (!/^[a-zA-Z\s]+$/.test(raw)) {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(raw)}`);
-                const data = await res.json(); query = data[0][0][0];
-            }
-            const resFood = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${query}`);
-            const foodData = await resFood.json();
-            if(foodData.hints && foodData.hints[0]) {
-                tempNutrients = foodData.hints[0].food.nutrients;
-                document.getElementById('searchResult').classList.remove('hidden');
-                document.getElementById('resName').innerText = `已搜尋: ${lastChineseInput}`;
-            }
+            const btn = document.getElementById('searchBtn');
+            btn.innerText = "搜尋中...";
+            lastZhInput = raw;
+
+            try {
+                const transRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=en&dt=t&q=${encodeURIComponent(raw)}`);
+                const transData = await transRes.json();
+                const queryEn = transData[0][0][0];
+                
+                const resFood = await fetch(`https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=${queryEn}`);
+                const foodData = await resFood.json();
+
+                if(foodData.hints && foodData.hints[0]) {
+                    tempNutrients = foodData.hints[0].food.nutrients;
+                    document.getElementById('searchResult').classList.remove('hidden');
+                    document.getElementById('resNameZh').innerText = `搜尋: ${lastZhInput}`;
+                    document.getElementById('resNameEn').innerText = `Match: ${foodData.hints[0].food.label}`;
+                } else { alert("找不到相關食物"); }
+            } catch (e) { alert("連線錯誤"); } finally { btn.innerText = "搜尋"; }
         }
 
         function addToDiary() {
             const amt = parseFloat(document.getElementById('foodAmount').value);
             if(!amt || !tempNutrients) return;
-            diary.items.push({ id: Date.now(), name: lastChineseInput, kcal: tempNutrients.ENERC_KCAL * (amt/100), pro: tempNutrients.PROCNT * (amt/100), carb: tempNutrients.CHOCDF * (amt/100), fat: tempNutrients.FAT * (amt/100), amt: amt });
+            diary.items.push({ id: Date.now(), name: lastZhInput, kcal: tempNutrients.ENERC_KCAL * (amt/100), pro: tempNutrients.PROCNT * (amt/100), carb: tempNutrients.CHOCDF * (amt/100), fat: tempNutrients.FAT * (amt/100), amt: amt });
             document.getElementById('searchResult').classList.add('hidden');
             document.getElementById('foodInput').value = '';
+            document.getElementById('foodAmount').value = '';
             sync();
         }
 
@@ -176,7 +187,6 @@
             upNut('totalCarb', sums.carb, goalCarb, 'carbBar');
             upNut('totalFat', sums.fat, goalFat, 'fatBar');
             document.getElementById('waterText').innerHTML = `${diary.water} <span class="text-sm text-slate-400 italic">/ ${WATER_GOAL} cc</span>`;
-
             document.getElementById('todayItems').innerHTML = diary.items.map(i => `<div onclick="deleteItem(${i.id})" class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100 px-4 py-3"><span class="text-slate-700 font-bold text-xs">${i.name} (${i.amt}g)</span><span class="font-black text-blue-500 text-xs">${Math.round(i.kcal)} kcal</span></div>`).join('');
         }
 
@@ -210,18 +220,18 @@
         }
 
         function exportAllData() {
-            let csv = "\uFEFF類別,日期,內容,數值,蛋白質,碳水,脂肪\n";
-            weightHistory.forEach(h => csv += `體重歷史,${h.date},體重數據,${h.val}kg,,,,\n`);
+            let csv = "\uFEFF類別,日期,內容,重量/數值,蛋白質,碳水,脂肪\n";
+            weightHistory.forEach(h => csv += `體重紀錄,${h.date},體重歷史,${h.val}kg,,,,\n`);
             let history = JSON.parse(localStorage.getItem('mifa_food_history')) || [];
             [...history, diary].forEach(day => {
-                day.items.forEach(i => { csv += `飲食明細,${day.date},${i.name},${i.amt}g,${Math.round(i.pro)}g,${Math.round(i.carb)}g,${Math.round(i.fat)}g\n`; });
+                day.items.forEach(i => { csv += `飲食紀錄,${day.date},${i.name},${i.amt}g,${Math.round(i.pro)}g,${Math.round(i.carb)}g,${Math.round(i.fat)}g\n`; });
             });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-            link.download = `Mifa_FIT_Full_Data.csv`; link.click();
+            link.download = `Mifa_FIT_Full_Report.csv`; link.click();
         }
 
-        function deleteItem(id) { diary.items = diary.items.filter(i => i.id !== id); sync(); }
+        function deleteItem(id) { if(confirm("移除此筆紀錄？")) { diary.items = diary.items.filter(i => i.id !== id); sync(); } }
         function addWater(cc) { diary.water += cc; if(diary.water < 0) diary.water = 0; sync(); }
         function saveWeight() {
             const v = document.getElementById('weightInput').value;
@@ -230,7 +240,7 @@
             document.getElementById('weightInput').value = '';
             sync();
         }
-        function deleteLastWeight() { if(confirm("刪除最後一筆體重？")) { weightHistory.pop(); sync(); } }
+        function deleteLastWeight() { if(confirm("刪除最後一筆體重數據？")) { weightHistory.pop(); sync(); } }
         window.onload = sync;
     </script>
 </body>
