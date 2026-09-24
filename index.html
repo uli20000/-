@@ -1,1 +1,541 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>肯德基餐廳調撥工時查詢</title><style>:root{--paper:#fffdf8;--cream:#f3eee6;--ink:#282426;--muted:#6f6762;--red:#a91634;--red-dark:#711225;--yellow:#e8b52b;--line:#e2d5c7;--shadow:0 12px 28px rgba(70,39,30,.1)}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:"Microsoft JhengHei","微軟正黑體","Noto Sans TC",Arial,sans-serif;font-size:16px;line-height:1.5;font-weight:600}.wrap{max-width:820px;margin:0 auto;padding:42px 24px 56px;text-align:center}.hero{margin-bottom:24px}.brand{display:inline-flex;align-items:center;gap:9px;color:var(--red);font-size:14px;font-weight:900;letter-spacing:.08em}.brand i{display:block;width:10px;height:10px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 4px rgba(243,196,0,.16)}h1{margin:15px 0 8px;color:var(--red-dark);font-size:36px;line-height:1.2;letter-spacing:.04em;font-weight:900}.hero p{margin:0;color:var(--muted);font-size:15px}.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.calculator{padding:26px 28px 24px;border-top:5px solid var(--red)}.form-grid{display:grid;grid-template-columns:1fr 48px 1fr;gap:14px;align-items:end}.field label{display:block;margin-bottom:8px;color:var(--red-dark);font-size:15px;font-weight:900}.field select{width:100%;height:52px;border:1px solid #d4c7b8;border-radius:10px;padding:0 12px;background:#fff;color:var(--ink);font:inherit;font-weight:700;text-align:center;text-align-last:center;outline:none;cursor:pointer}.field select:focus{border-color:var(--red);box-shadow:0 0 0 3px #ffe1e7}.swap{height:52px;border:1px solid #e1c76b;border-radius:10px;background:#fff6d5;color:var(--red);font-size:23px;font-weight:800;cursor:pointer}.actions{margin-top:18px}.button{height:48px;padding:0 26px;border:0;border-radius:10px;background:var(--red-dark);color:#fff;font:900 16px inherit;cursor:pointer;box-shadow:0 5px 14px rgba(179,15,42,.18)}.hint{margin:10px 0 0;color:var(--muted);font-size:13px}.error{margin-top:10px;color:var(--red-dark);font-size:14px}.result{margin-top:16px;padding:24px;min-height:128px}.result.empty{display:grid;place-items:center;color:var(--muted)}.result h2{margin:0 0 5px;color:var(--red-dark);font-size:24px;line-height:1.25;font-weight:900}.route{margin:0;color:var(--muted);font-weight:700}.badge{display:inline-block;margin-top:14px;padding:7px 17px;border-radius:999px;background:#fff2c8;color:#7a4f08;font-weight:900;font-size:17px}.badge.call{background:#fff0df;color:#9a5a17}.nearby{margin-top:16px;padding:22px 24px}.nearby h2{margin:0;color:var(--red-dark);font-size:21px;font-weight:900}.nearby-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;text-align:left;margin-top:16px}.nearby-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:14px}.nearby-item .name{font-weight:900}.nearby-item .distance{color:var(--red);font-weight:900;white-space:nowrap}.nearby-empty{color:var(--muted);font-size:14px;padding:6px}.foot{margin-top:16px;color:var(--muted);font-size:12px}@media(max-width:700px){.wrap{padding:30px 16px 44px}h1{font-size:30px}.calculator{padding:22px 18px}.form-grid{grid-template-columns:1fr;gap:12px}.swap{width:100%;height:40px}.button{width:100%}.nearby-list{grid-template-columns:1fr}.result,.nearby{padding:20px}}</style></head><body><main class="wrap"><header class="hero"><div class="brand"><i></i>KFC 餐廳調撥</div><h1>調撥工時查詢</h1><p>選擇兩間餐廳，立即查詢。</p></header><section class="card calculator"><div class="form-grid"><div class="field"><label for="from">起點餐廳</label><select id="from"><option value="" selected disabled>請選擇餐廳</option><option value="0">桃園介壽餐廳</option><option value="1">桃園大園餐廳</option><option value="2">桃園大溪餐廳</option><option value="3">中壢過嶺餐廳</option><option value="4">桃園領航餐廳</option><option value="5">中壢中正餐廳</option><option value="6">中壢中和餐廳</option><option value="7">中壢民族餐廳</option><option value="8">中壢環中東餐廳</option><option value="9">中壢環中東二餐廳</option><option value="10">桃園大興西餐廳</option><option value="11">桃園桃鶯餐廳</option><option value="12">桃園南平餐廳</option><option value="13">桃園中山二餐廳</option><option value="14">桃園新屋餐廳</option><option value="15">楊梅中山餐廳</option><option value="16">楊梅大成餐廳</option><option value="17">龍潭北龍餐廳</option><option value="18">林口復興餐廳</option><option value="19">桃園萬壽餐廳</option><option value="20">桃園南崁中正餐廳</option><option value="21">桃園台茂三餐廳</option><option value="22">桃園大竹餐廳</option><option value="23">新竹民生餐廳</option><option value="24">新竹亞太餐廳</option><option value="25">新竹光復餐廳</option><option value="26">新竹清大餐廳</option><option value="27">新竹中正餐廳</option><option value="28">竹北中華餐廳</option><option value="29">新竹竹北餐廳</option><option value="30">竹北自強餐廳</option><option value="31">新竹竹東餐廳</option><option value="32">新竹湖口餐廳</option><option value="33">新竹新豐餐廳</option></select></div><button class="swap" id="swap" type="button">⇄</button><div class="field"><label for="to">終點餐廳</label><select id="to"><option value="" selected disabled>請選擇餐廳</option><option value="0">桃園介壽餐廳</option><option value="1">桃園大園餐廳</option><option value="2">桃園大溪餐廳</option><option value="3">中壢過嶺餐廳</option><option value="4">桃園領航餐廳</option><option value="5">中壢中正餐廳</option><option value="6">中壢中和餐廳</option><option value="7">中壢民族餐廳</option><option value="8">中壢環中東餐廳</option><option value="9">中壢環中東二餐廳</option><option value="10">桃園大興西餐廳</option><option value="11">桃園桃鶯餐廳</option><option value="12">桃園南平餐廳</option><option value="13">桃園中山二餐廳</option><option value="14">桃園新屋餐廳</option><option value="15">楊梅中山餐廳</option><option value="16">楊梅大成餐廳</option><option value="17">龍潭北龍餐廳</option><option value="18">林口復興餐廳</option><option value="19">桃園萬壽餐廳</option><option value="20">桃園南崁中正餐廳</option><option value="21">桃園台茂三餐廳</option><option value="22">桃園大竹餐廳</option><option value="23">新竹民生餐廳</option><option value="24">新竹亞太餐廳</option><option value="25">新竹光復餐廳</option><option value="26">新竹清大餐廳</option><option value="27">新竹中正餐廳</option><option value="28">竹北中華餐廳</option><option value="29">新竹竹北餐廳</option><option value="30">竹北自強餐廳</option
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>肯德基餐廳調撥工時查詢</title>
+    <style>
+      :root {
+        --paper: #fffdf8;
+        --cream: #f3eee6;
+        --ink: #282426;
+        --muted: #6f6762;
+        --red: #a91634;
+        --red-dark: #711225;
+        --yellow: #e8b52b;
+        --line: #e2d5c7;
+        --shadow: 0 12px 28px rgba(70, 39, 30, 0.1);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family:
+          "Microsoft JhengHei", "微軟正黑體", "Noto Sans TC", Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        font-weight: 600;
+      }
+      .wrap {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 42px 24px 56px;
+        text-align: center;
+      }
+      .hero {
+        margin-bottom: 24px;
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        color: var(--red);
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+      }
+      .brand i {
+        display: block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--yellow);
+        box-shadow: 0 0 0 4px rgba(243, 196, 0, 0.16);
+      }
+      h1 {
+        margin: 15px 0 8px;
+        color: var(--red-dark);
+        font-size: 36px;
+        line-height: 1.2;
+        letter-spacing: 0.04em;
+        font-weight: 900;
+      }
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+      }
+      .calculator {
+        padding: 26px 28px 24px;
+        border-top: 5px solid var(--red);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 48px 1fr;
+        gap: 14px;
+        align-items: end;
+      }
+      .field label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--red-dark);
+        font-size: 15px;
+        font-weight: 900;
+      }
+      .field select {
+        width: 100%;
+        height: 52px;
+        border: 1px solid #d4c7b8;
+        border-radius: 10px;
+        padding: 0 12px;
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+        font-weight: 700;
+        text-align: center;
+        text-align-last: center;
+        outline: none;
+        cursor: pointer;
+      }
+      .field select:focus {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px #ffe1e7;
+      }
+      .swap {
+        height: 52px;
+        border: 1px solid #e1c76b;
+        border-radius: 10px;
+        background: #fff6d5;
+        color: var(--red);
+        font-size: 23px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .actions {
+        margin-top: 18px;
+      }
+      .button {
+        height: 48px;
+        padding: 0 26px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--red-dark);
+        color: #fff;
+        font: 900 16px inherit;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(179, 15, 42, 0.18);
+      }
+      .hint {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .error {
+        margin-top: 10px;
+        color: var(--red-dark);
+        font-size: 14px;
+      }
+      .result {
+        margin-top: 16px;
+        padding: 24px;
+        min-height: 128px;
+      }
+      .result.empty {
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+      }
+      .result h2 {
+        margin: 0 0 5px;
+        color: var(--red-dark);
+        font-size: 24px;
+        line-height: 1.25;
+        font-weight: 900;
+      }
+      .route {
+        margin: 0;
+        color: var(--muted);
+        font-weight: 700;
+      }
+      .badge {
+        display: inline-block;
+        margin-top: 14px;
+        padding: 7px 17px;
+        border-radius: 999px;
+        background: #fff2c8;
+        color: #7a4f08;
+        font-weight: 900;
+        font-size: 17px;
+      }
+      .badge.call {
+        background: #fff0df;
+        color: #9a5a17;
+      }
+      .nearby {
+        margin-top: 16px;
+        padding: 22px 24px;
+      }
+      .nearby h2 {
+        margin: 0;
+        color: var(--red-dark);
+        font-size: 21px;
+        font-weight: 900;
+      }
+      .nearby-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        text-align: left;
+        margin-top: 16px;
+      }
+      .nearby-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 11px 13px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #fff;
+        font-size: 14px;
+      }
+      .nearby-item .name {
+        font-weight: 900;
+      }
+      .nearby-item .distance {
+        color: var(--red);
+        font-weight: 900;
+        white-space: nowrap;
+      }
+      .nearby-empty {
+        color: var(--muted);
+        font-size: 14px;
+        padding: 6px;
+      }
+      .foot {
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      @media (max-width: 700px) {
+        .wrap {
+          padding: 30px 16px 44px;
+        }
+        h1 {
+          font-size: 30px;
+        }
+        .calculator {
+          padding: 22px 18px;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+        .swap {
+          width: 100%;
+          height: 40px;
+        }
+        .button {
+          width: 100%;
+        }
+        .nearby-list {
+          grid-template-columns: 1fr;
+        }
+        .result,
+        .nearby {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="hero">
+        <div class="brand"><i></i>KFC 餐廳調撥</div>
+        <h1>調撥工時查詢</h1>
+        <p>選擇兩間餐廳，立即查詢。</p>
+      </header>
+      <section class="card calculator">
+        <div class="form-grid">
+          <div class="field">
+            <label for="from">起點餐廳</label
+            ><select id="from">
+              <option value="" selected disabled>請選擇餐廳</option>
+              <option value="0">桃園介壽餐廳</option>
+              <option value="1">桃園大園餐廳</option>
+              <option value="2">桃園大溪餐廳</option>
+              <option value="3">中壢過嶺餐廳</option>
+              <option value="4">桃園領航餐廳</option>
+              <option value="5">中壢中正餐廳</option>
+              <option value="6">中壢中和餐廳</option>
+              <option value="7">中壢民族餐廳</option>
+              <option value="8">中壢環中東餐廳</option>
+              <option value="9">中壢環中東二餐廳</option>
+              <option value="10">桃園大興西餐廳</option>
+              <option value="11">桃園桃鶯餐廳</option>
+              <option value="12">桃園南平餐廳</option>
+              <option value="13">桃園中山二餐廳</option>
+              <option value="14">桃園新屋餐廳</option>
+              <option value="15">楊梅中山餐廳</option>
+              <option value="16">楊梅大成餐廳</option>
+              <option value="17">龍潭北龍餐廳</option>
+              <option value="18">林口復興餐廳</option>
+              <option value="19">桃園萬壽餐廳</option>
+              <option value="20">桃園南崁中正餐廳</option>
+              <option value="21">桃園台茂三餐廳</option>
+              <option value="22">桃園大竹餐廳</option>
+              <option value="23">新竹民生餐廳</option>
+              <option value="24">新竹亞太餐廳</option>
+              <option value="25">新竹光復餐廳</option>
+              <option value="26">新竹清大餐廳</option>
+              <option value="27">新竹中正餐廳</option>
+              <option value="28">竹北中華餐廳</option>
+              <option value="29">新竹竹北餐廳</option>
+              <option value="30">竹北自強餐廳</option>
+              <option value="31">新竹竹東餐廳</option>
+              <option value="32">新竹湖口餐廳</option>
+              <option value="33">新竹新豐餐廳</option>
+            </select>
+          </div>
+          <button class="swap" id="swap" type="button">⇄</button>
+          <div class="field">
+            <label for="to">終點餐廳</label
+            ><select id="to">
+              <option value="" selected disabled>請選擇餐廳</option>
+              <option value="0">桃園介壽餐廳</option>
+              <option value="1">桃園大園餐廳</option>
+              <option value="2">桃園大溪餐廳</option>
+              <option value="3">中壢過嶺餐廳</option>
+              <option value="4">桃園領航餐廳</option>
+              <option value="5">中壢中正餐廳</option>
+              <option value="6">中壢中和餐廳</option>
+              <option value="7">中壢民族餐廳</option>
+              <option value="8">中壢環中東餐廳</option>
+              <option value="9">中壢環中東二餐廳</option>
+              <option value="10">桃園大興西餐廳</option>
+              <option value="11">桃園桃鶯餐廳</option>
+              <option value="12">桃園南平餐廳</option>
+              <option value="13">桃園中山二餐廳</option>
+              <option value="14">桃園新屋餐廳</option>
+              <option value="15">楊梅中山餐廳</option>
+              <option value="16">楊梅大成餐廳</option>
+              <option value="17">龍潭北龍餐廳</option>
+              <option value="18">林口復興餐廳</option>
+              <option value="19">桃園萬壽餐廳</option>
+              <option value="20">桃園南崁中正餐廳</option>
+              <option value="21">桃園台茂三餐廳</option>
+              <option value="22">桃園大竹餐廳</option>
+              <option value="23">新竹民生餐廳</option>
+              <option value="24">新竹亞太餐廳</option>
+              <option value="25">新竹光復餐廳</option>
+              <option value="26">新竹清大餐廳</option>
+              <option value="27">新竹中正餐廳</option>
+              <option value="28">竹北中華餐廳</option>
+              <option value="29">新竹竹北餐廳</option>
+              <option value="30">竹北自強餐廳</option>
+              <option value="31">新竹竹東餐廳</option>
+              <option value="32">新竹湖口餐廳</option>
+              <option value="33">新竹新豐餐廳</option>
+            </select>
+          </div>
+        </div>
+        <div id="error" class="error" hidden></div>
+        <div class="actions">
+          <button class="button" id="calculate" type="button">
+            查詢調撥工時
+          </button>
+        </div>
+      </section>
+      <section id="result" class="card result empty">
+        請選擇起點與終點餐廳。
+      </section>
+      <section class="card nearby">
+        <h2>5 公里內餐廳</h2>
+        <div id="nearby-list" class="nearby-list">
+          <div class="nearby-empty">尚未選擇餐廳</div>
+        </div>
+      </section>
+      <footer class="foot">距離為道路估算值</footer>
+    </main>
+    <script>
+      const DATA = {
+          names: [
+            "桃園介壽餐廳",
+            "桃園大園餐廳",
+            "桃園大溪餐廳",
+            "中壢過嶺餐廳",
+            "桃園領航餐廳",
+            "中壢中正餐廳",
+            "中壢中和餐廳",
+            "中壢民族餐廳",
+            "中壢環中東餐廳",
+            "中壢環中東二餐廳",
+            "桃園大興西餐廳",
+            "桃園桃鶯餐廳",
+            "桃園南平餐廳",
+            "桃園中山二餐廳",
+            "桃園新屋餐廳",
+            "楊梅中山餐廳",
+            "楊梅大成餐廳",
+            "龍潭北龍餐廳",
+            "林口復興餐廳",
+            "桃園萬壽餐廳",
+            "桃園南崁中正餐廳",
+            "桃園台茂三餐廳",
+            "桃園大竹餐廳",
+            "新竹民生餐廳",
+            "新竹亞太餐廳",
+            "新竹光復餐廳",
+            "新竹清大餐廳",
+            "新竹中正餐廳",
+            "竹北中華餐廳",
+            "新竹竹北餐廳",
+            "竹北自強餐廳",
+            "新竹竹東餐廳",
+            "新竹湖口餐廳",
+            "新竹新豐餐廳",
+          ],
+          dist: [
+            193, 82, 154, 140, 100, 102, 119, 57, 92, 68, 39, 72, 41, 300, 178,
+            217, 161, 150, 58, 107, 122, 95, 516, 556, 528, 535, 568, 441, 423,
+            476, 428, 463, 388, 318, 141, 94, 154, 156, 200, 181, 162, 143, 219,
+            133, 157, 175, 269, 282, 360, 215, 187, 135, 119, 92, 535, 547, 524,
+            526, 559, 505, 488, 496, 618, 527, 452, 165, 183, 125, 127, 132,
+            124, 114, 147, 118, 150, 120, 218, 150, 185, 79, 338, 137, 258, 273,
+            174, 434, 474, 446, 453, 486, 408, 391, 394, 346, 431, 355, 80, 53,
+            61, 36, 102, 89, 178, 174, 171, 150, 79, 95, 78, 153, 253, 181, 174,
+            188, 138, 362, 373, 351, 352, 386, 331, 314, 323, 427, 354, 278, 67,
+            71, 73, 90, 77, 136, 212, 126, 150, 137, 145, 178, 175, 208, 180,
+            118, 109, 65, 432, 443, 421, 422, 456, 402, 384, 393, 448, 424, 348,
+            5, 17, 48, 27, 109, 119, 137, 95, 149, 81, 106, 114, 219, 127, 139,
+            154, 107, 370, 381, 359, 360, 393, 339, 322, 330, 388, 361, 286, 26,
+            40, 22, 111, 121, 139, 97, 151, 83, 108, 116, 221, 129, 141, 156,
+            109, 372, 383, 361, 362, 395, 341, 324, 333, 390, 363, 288, 71, 57,
+            151, 142, 144, 118, 134, 86, 98, 125, 226, 150, 146, 161, 111, 352,
+            364, 341, 343, 376, 322, 304, 313, 398, 344, 269, 26, 76, 86, 87,
+            62, 191, 121, 166, 133, 202, 93, 122, 137, 88, 420, 432, 409, 411,
+            444, 390, 372, 381, 407, 412, 336, 102, 111, 145, 88, 165, 94, 120,
+            106, 227, 119, 147, 162, 115, 386, 397, 375, 376, 409, 355, 338,
+            346, 380, 377, 302, 48, 12, 34, 266, 217, 230, 263, 127, 52, 47, 61,
+            40, 484, 495, 473, 474, 507, 453, 436, 444, 521, 475, 400, 50, 27,
+            301, 198, 265, 204, 115, 25, 74, 88, 75, 550, 590, 562, 569, 602,
+            488, 471, 511, 463, 511, 435, 37, 277, 228, 241, 274, 117, 53, 36,
+            50, 50, 494, 506, 483, 485, 518, 464, 447, 455, 532, 486, 411, 249,
+            173, 213, 232, 120, 35, 72, 87, 61, 467, 478, 456, 457, 490, 436,
+            419, 427, 490, 458, 383, 110, 85, 206, 353, 280, 273, 288, 217, 340,
+            319, 296, 298, 348, 244, 259, 268, 341, 299, 212, 26, 94, 291, 219,
+            211, 226, 176, 282, 293, 271, 272, 306, 251, 234, 243, 375, 274,
+            198, 121, 322, 294, 243, 257, 207, 297, 309, 286, 288, 321, 267,
+            250, 258, 259, 289, 214, 350, 231, 270, 285, 235, 367, 407, 379,
+            385, 419, 364, 335, 327, 279, 370, 342, 96, 97, 111, 145, 567, 578,
+            556, 557, 591, 536, 519, 528, 654, 559, 483, 77, 91, 83, 527, 539,
+            516, 518, 551, 497, 479, 488, 482, 519, 444, 15, 55, 485, 497, 474,
+            476, 509, 455, 437, 446, 572, 477, 401, 61, 498, 509, 487, 488, 522,
+            468, 450, 459, 585, 490, 414, 449, 460, 438, 439, 473, 418, 401,
+            410, 541, 441, 365, 22, 57, 49, 18, 52, 51, 67, 155, 106, 91, 37,
+            30, 20, 55, 55, 70, 159, 121, 94, 16, 50, 75, 58, 38, 96, 94, 115,
+            33, 82, 65, 55, 113, 100, 121, 58, 58, 74, 162, 134, 98, 17, 41,
+            153, 72, 44, 25, 143, 55, 62, 120, 62, 83, 195, 194, 73,
+          ],
+        },
+        n = DATA.names.length,
+        from = document.getElementById("from"),
+        to = document.getElementById("to"),
+        result = document.getElementById("result"),
+        nearby = document.getElementById("nearby-list"),
+        error = document.getElementById("error");
+      function km(a, b) {
+        if (a === b) return 0;
+        if (a > b) [a, b] = [b, a];
+        return DATA.dist[(a * (2 * n - a - 1)) / 2 + b - a - 1] / 10;
+      }
+      function esc(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      function rule(d) {
+        if (d <= 5) return ["調撥工時：30 分鐘", ""];
+        if (d <= 9) return ["調撥工時：60 分鐘", ""];
+        if (d <= 13) return ["調撥工時：90 分鐘", ""];
+        if (d <= 17) return ["調撥工時：120 分鐘", ""];
+        return ["請致電中心溝通", "call"];
+      }
+      function showNearby(a) {
+        if (a === "") {
+          nearby.innerHTML = '<div class="nearby-empty">尚未選擇餐廳</div>';
+          return;
+        }
+        const list = DATA.names
+          .map((name, i) => ({ name, i, d: km(+a, i) }))
+          .filter((x) => x.i !== +a && x.d <= 5)
+          .sort((a, b) => a.d - b.d);
+        nearby.innerHTML = list.length
+          ? list
+              .map(
+                (x) =>
+                  '<div class="nearby-item"><span class="name">' +
+                  esc(x.name) +
+                  '</span><span class="distance">' +
+                  x.d.toFixed(1) +
+                  " km</span></div>",
+              )
+              .join("")
+          : '<div class="nearby-empty">目前沒有其他餐廳在 5 公里內。</div>';
+      }
+      function calc() {
+        error.hidden = true;
+        showNearby(from.value);
+        if (from.value === "" || to.value === "") {
+          result.className = "card result empty";
+          result.textContent = "請選擇起點與終點餐廳。";
+          return;
+        }
+        if (from.value === to.value) {
+          result.className = "card result empty";
+          result.textContent = "起點與終點不能是同一間餐廳。";
+          return;
+        }
+        const d = km(+from.value, +to.value),
+          r = rule(d);
+        result.className = "card result";
+        result.innerHTML =
+          "<h2>" +
+          r[0] +
+          '</h2><p class="route">' +
+          esc(DATA.names[from.value]) +
+          " → " +
+          esc(DATA.names[to.value]) +
+          '</p><span class="badge ' +
+          r[1] +
+          '">' +
+          d.toFixed(1) +
+          " km</span>";
+      }
+      from.addEventListener("change", calc);
+      to.addEventListener("change", calc);
+      document.getElementById("calculate").addEventListener("click", calc);
+      document.getElementById("swap").addEventListener("click", () => {
+        [from.value, to.value] = [to.value, from.value];
+        calc();
+      });
+    </script>
+  </body>
+</html>
