@@ -405,13 +405,13 @@
         請選擇起點與終點餐廳。
       </section>
       <section id="nearby-5-card" class="card nearby" aria-live="polite">
-        <h2>5 公里內餐廳</h2>
+        <h2>5 公里內（30 分鐘）</h2>
         <div id="nearby-5" class="nearby-list">
           <div class="nearby-empty">尚未選擇餐廳</div>
         </div>
       </section>
       <section id="nearby-9-card" class="card nearby" aria-live="polite">
-        <h2>9 公里內餐廳</h2>
+        <h2>9 公里內（60 分鐘）</h2>
         <div id="nearby-9" class="nearby-list">
           <div class="nearby-empty">尚未選擇餐廳</div>
         </div>
@@ -996,7 +996,7 @@
           note: "距離超過 17 公里，請致電中心溝通調撥安排。",
         };
       }
-      function renderNearby(shop, max, el) {
+      function renderNearby(shop, min, max, el) {
         if (!shop) {
           el.innerHTML = '<div class="nearby-empty">尚未選擇餐廳</div>';
           return;
@@ -1007,8 +1007,9 @@
             shop: s,
             km: DATA.distances[shop.index][s.index] / 1000,
           }))
-          .filter((x) => x.km <= max)
+          .filter((x) => x.km > min && x.km <= max)
           .sort((a, b) => a.km - b.km);
+        const range = min === 0 ? max + " 公里內" : "6～" + max + " 公里";
         el.innerHTML = items.length
           ? items
               .map(
@@ -1021,12 +1022,12 @@
               )
               .join("")
           : '<div class="nearby-empty">目前沒有其他餐廳在 ' +
-            max +
-            " 公里內。</div>";
+            range +
+            "。</div>";
       }
       function showNearby(shop) {
-        renderNearby(shop, 5, nearby5);
-        renderNearby(shop, 9, nearby9);
+        renderNearby(shop, 0, 5, nearby5);
+        renderNearby(shop, 5, 9, nearby9);
       }
       function calculate() {
         errorEl.hidden = true;
