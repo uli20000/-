@@ -1,3 +1,9 @@
+-- 2026-11-23 實際套用情形（Claude 經 Supabase 連接器）：
+--   已套用：建表、RLS、t995_transfer_pw_ok/check/list/add、軟刪除版 t995_transfer_delete（設 deleted_at，list 不顯示）。
+--   沒套用：下面的 revoke（RLS 已開且無 policy，網頁本來就讀不到表）、原本的硬刪除版 delete。
+--   待美花在 SQL Editor 自己跑：最底下的 7 天清除排程（含 delete，連接器需要的確認視窗在 App 裡不會跳出）。
+--   實際套用的函式以資料庫為準；軟刪除版見檔案最後。
+
 -- 調撥工時查詢 v2：當日調撥紀錄（995 Supabase）
 -- 2026-11-23 建立。紀錄只留 7 天（含今天），每天 00:05（台北）自動清除。
 -- 網頁只能透過下面的函式讀寫；新增、刪除要值班密碼（只存雜湊）。
@@ -97,3 +103,9 @@ grant execute on function public.t995_transfer_delete(text,uuid) to anon, authen
 -- 每天 00:05（台北 = UTC 16:05）刪除 7 天前的紀錄
 select cron.schedule('t995_transfer_logs_retention_7d', '5 16 * * *',
   $$delete from public.t995_transfer_logs where log_date < (now() at time zone 'Asia/Taipei')::date - 6$$);
+
+
+-- ===== 實際套用的軟刪除版（取代上面的 list / delete）=====
+alter table public.t995_transfer_logs add column if not exists deleted_at timestamptz;
+-- list 多加條件：and l.deleted_at is null
+-- delete 改為：update public.t995_transfer_logs set deleted_at = now() where id = p_id and deleted_at is null;
