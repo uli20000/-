@@ -638,7 +638,7 @@ function renderReqSum(){
   const map=new Map();
   logs.forEach(l=>{const k=l.req_code||'';if(!map.has(k))map.set(k,{name:l.req_code?shortName(l.req_name):'未指定',n:0,mins:0,calls:0});const r=map.get(k);r.n++;if(l.minutes==null)r.calls++;else r.mins+=l.minutes;});
   const rows=[...map.entries()].sort((a,b)=>(a[0]===''?1:0)-(b[0]===''?1:0)||b[1].mins-a[1].mins);
-  $('req-body').innerHTML=rows.map(([k,r])=>'<tr'+(k?'':' class="none"')+'><td>'+esc(r.name)+'</td><td>'+r.n+'</td><td class="mins-cell">'+r.mins+' 分鐘</td><td>'+(r.calls||'—')+'</td></tr>').join('');
+  $('req-body').innerHTML=rows.map(([k,r])=>'<tr'+(k?'':' class="none"')+'><td>'+esc(r.name)+'</td><td>'+(r.mins/30)+'</td><td class="mins-cell">'+r.mins+' 分鐘</td><td>'+(r.calls||'—')+'</td></tr>').join('');
   $('req-sum').hidden=false;
 }
 let reqId=null;
