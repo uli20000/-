@@ -108,7 +108,7 @@ function trip(a,b){const out=displayKm(DATA.distances[a.index][b.index]),back=di
 function renderNearby(shop,min,max,el){
   if(!shop){el.innerHTML='<div class="nearby-empty">尚未輸入起點店號</div>';return;}
   const items=shops.filter(s=>s.index!==shop.index).map(s=>({s,...trip(shop,s)})).filter(x=>x.basis>min&&x.basis<=max).sort((a,b)=>a.basis-b.basis);
-  el.innerHTML=items.length?items.map(x=>'<div class="nearby-item"><span class="name">'+esc(shortName(x.s.shortName))+'<span class="code">'+esc(x.s.code.slice(3))+'</span></span><span class="distance">'+x.out.toFixed(1)+' / '+x.back.toFixed(1)+' km · '+x.minutes+'分</span></div>').join(''):'<div class="nearby-empty">目前沒有其他餐廳符合此雙向距離範圍。</div>';
+  el.innerHTML=items.length?items.map(x=>'<div class="nearby-item"><span class="name">'+esc(shortName(x.s.shortName))+'</span><span class="distance">'+x.minutes+' 分鐘</span></div>').join(''):'<div class="nearby-empty">目前沒有其他餐廳符合此雙向距離範圍。</div>';
 }
 
 function update(){
