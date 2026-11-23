@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>肯德基餐廳調撥工時查詢｜D2 微調版</title>
+<style>
+* { box-sizing: border-box; }
+:root { color-scheme: dark; }
+html { scroll-padding-top: 16px; }
+body {
+  margin: 0;
+  min-width: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 500 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+h1, h2, h3, p, dl, dd, ul { margin: 0; }
+ul { list-style: none; padding: 0; }
+button, input { font: inherit; }
+button, summary { -webkit-tap-highlight-color: transparent; }
+button, summary, a { touch-action: manipulation; }
+button, summary { cursor: pointer; }
+button:disabled { cursor: default; opacity: .42; }
+a { color: inherit; text-decoration: none; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+h1, h2, h3, time, label, button, summary, .nowrap { white-space: nowrap; }
+h1 { font-size: clamp(22px, 2.25vw, 34px); font-weight: 780; letter-spacing: .04em; line-height: 1.2; }
+h2, h3 { font-size: 16px; font-weight: 730; letter-spacing: .025em; }
+.brand-lockup { display: inline-flex; align-items: center; gap: 11px; min-width: 0; white-space: nowrap; }
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 45px;
+  height: 39px;
+  color: #fff;
+  background: var(--red);
+  border-radius: 9px;
+  font-size: 15px;
+  font-weight: 870;
+  font-style: italic;
+  letter-spacing: -.045em;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--control-radius);
+  color: var(--text);
+  background: var(--button);
+  font-weight: 650;
+  transition: background .14s, border-color .14s, transform .14s;
+}
+.btn:hover:not(:disabled) { background: var(--hover); border-color: var(--line-bright); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary {
+  border-color: transparent;
+  color: #fff;
+  background: var(--red);
+}
+.btn.primary:hover:not(:disabled) { background: var(--red-hover); border-color: transparent; }
+.preview { position: relative; justify-self: end; z-index: 3; }
+.preview summary { list-style: none; min-height: 40px; }
+.preview summary::-webkit-details-marker { display: none; }
+.preview summary::after { content: ""; width: 5px; height: 5px; margin: -3px 1px 0 2px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.preview[open] summary::after { margin-top: 2px; transform: rotate(225deg); }
+.preview-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 276px;
+  padding: 14px;
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius);
+  background: var(--popup);
+  box-shadow: 0 16px 38px #0008;
+  text-align: center;
+}
+.preview-panel h3 { margin-bottom: 8px; color: var(--muted); font-size: 13px; }
+.preview-panel .btn { width: 100%; padding-inline: 5px; }
+.preview-panel .btn[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); }
+.preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.preview-duty { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.preview-password { margin-top: 6px; }
+.workspace, .query, .nearby-group, .log, .panel, .form-grid, .field, .log-item { min-width: 0; }
+.workspace { display: grid; align-items: start; }
+.query { display: grid; align-content: start; }
+.panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr); align-items: center; gap: 12px; }
+.field { display: grid; gap: 5px; text-align: center; }
+.field label { color: var(--muted); font-size: 13px; }
+.field input, .modal-fields input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line-bright);
+  border-radius: var(--control-radius);
+  color: var(--text);
+  background: var(--well);
+  outline: none;
+}
+.field input { height: 50px; padding: 0 7px; text-align: center; font-size: 25px; font-weight: 750; letter-spacing: .055em; }
+.field input::placeholder { color: var(--muted); opacity: .65; }
+.field input:focus, .modal-fields input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.field input[aria-invalid="true"], .field input[aria-invalid="true"]:focus { border-color: var(--danger); }
+.shop-name { min-height: 21px; color: var(--muted); font-size: 13px; }
+.shop-name.bad { color: var(--danger); }
+.swap { width: 46px; height: 46px; padding: 0; background: var(--button); font-size: 23px; font-weight: 550; }
+.result { text-align: center; }
+.result h2 { font-size: 14px; }
+.result-time { display: grid; place-content: center; justify-items: center; min-width: 0; }
+.result-value { display: flex; align-items: baseline; justify-content: center; gap: 7px; min-width: 0; line-height: 1; white-space: nowrap; font-weight: 800; }
+.result-number { font-weight: 790; letter-spacing: -.065em; }
+.result-unit { font-size: 15px; font-weight: 710; letter-spacing: 0; }
+.result-call { font-size: clamp(25px, 3vw, 45px); letter-spacing: .025em; }
+.result .invalid, .result .empty-value { color: var(--muted); }
+.empty-value { font-size: 43px; line-height: .9; }
+.result .route { font-weight: 760; }
+.distance-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); text-align: center; }
+.distance-pair > div { min-width: 0; }
+.distance-pair dt { color: var(--muted); font-size: 12px; }
+.distance-pair dd { margin-top: 3px; font-size: 17px; font-weight: 750; white-space: nowrap; }
+.distance-pair dd.high { color: var(--call); }
+.distance-pair small { color: var(--muted); font-size: 11px; font-weight: 620; }
+.nearby-group { display: grid; align-items: start; }
+.nearby h2 { font-size: 14px; }
+.nearby-empty, .log-empty { color: var(--muted); text-align: center; }
+.nearby-empty { width: 100%; min-height: 39px; display: grid; place-items: center; }
+.log-date { color: var(--muted); font-size: 13px; }
+.log-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center; }
+.sum-box { min-width: 0; }
+.sum-label { color: var(--muted); font-size: 12px; }
+.sum-value { display: block; white-space: nowrap; font-size: 12px; }
+.sum-value b { font-size: 27px; line-height: 1.06; letter-spacing: -.04em; }
+.sum-box:nth-child(2) b { color: var(--accent); }
+.sum-box:nth-child(3) b { color: var(--call); }
+.log-item .route, .log-meta, .log-item time, .mins { white-space: nowrap; }
+.log-item .route { font-size: 14px; font-weight: 730; }
+.log-meta, .log-item time { color: var(--muted); font-size: 12px; }
+.log-meta { display: flex; gap: 8px; }
+.mins { color: var(--accent); font-size: 13px; font-weight: 760; text-align: center; }
+.mins.call { color: var(--call); }
+.del { color: var(--danger); font-size: 12px; min-height: 34px; padding-inline: 7px; }
+.log-empty { padding: 24px 8px; }
+.log-actions, .duty, .duty-buttons { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.duty-status { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.duty-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+body[data-duty="staff"] .duty-status::before { background: var(--accent); }
+.modal {
+  width: min(392px, calc(100% - 32px));
+  max-width: 100%;
+  padding: 21px;
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius);
+  color: var(--text);
+  background: var(--popup);
+  text-align: center;
+  box-shadow: 0 24px 75px #000a;
+}
+.modal::backdrop { background: #08090cbd; }
+.modal h2 { margin-bottom: 15px; font-size: 19px; }
+.modal-fields { display: grid; gap: 10px; text-align: start; }
+.modal-fields label { display: grid; gap: 5px; color: var(--muted); font-size: 13px; }
+.modal-fields input { height: 43px; padding: 0 11px; font-size: 16px; }
+.modal-error { margin-top: 10px; color: var(--danger); font-size: 13px; }
+.modal-error:empty { display: none; }
+.modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.toast {
+  position: fixed;
+  z-index: 5;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 28px);
+  padding: 9px 16px;
+  border: 1px solid var(--line-bright);
+  border-radius: 30px;
+  color: var(--text);
+  background: var(--popup);
+  box-shadow: 0 8px 35px #0007;
+  text-align: center;
+}
+.toast:empty { padding: 0; border: 0; }
+@media (max-width: 540px) {
+  h1 { font-size: 20px; letter-spacing: .015em; }
+  .btn, .preview summary { min-height: 44px; }
+  .form-grid { grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); gap: 8px; }
+  .swap { width: 44px; height: 44px; }
+  .field input { height: 46px; }
+  .log-item .route { font-size: 13px; }
+  .log-meta, .log-item time { font-size: 11px; }
+  .log-meta { gap: 6px; }
+  .sum-value b { font-size: 23px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+:root {
+  --bg: #171419;
+  --panel: #211d22;
+  --well: #1c181d;
+  --button: #2b252b;
+  --hover: #3a3039;
+  --popup: #2b242c;
+  --text: #f7f0ef;
+  --muted: #c0b2ba;
+  --line: #40353e;
+  --line-bright: #584953;
+  --red: #bf2744;
+  --red-hover: #d63050;
+  --accent: #f4dcac;
+  --accent-soft: #41352d;
+  --accent-line: #635042;
+  --call: #ffc0a4;
+  --danger: #ffc0cb;
+  --radius: 15px;
+  --control-radius: 9px;
+}
+body { background: var(--bg) radial-gradient(ellipse at 80% 0%, #2a1e27 0%, transparent 62%) no-repeat; }
+.topbar { border-bottom: 1px solid #3d323b; background: #1e191f; }
+.topbar-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  max-width: 1536px;
+  min-height: 75px;
+  margin: 0 auto;
+  padding: 0 38px;
+}
+.topbar .brand-lockup { justify-self: start; color: var(--muted); font-size: 13px; font-weight: 700; }
+.topbar .brand-mark { width: 45px; height: 37px; border-radius: 7px; }
+.topbar h1 { text-align: center; font-size: clamp(22px, 1.8vw, 29px); }
+.workspace {
+  grid-template-columns: minmax(0, .94fr) minmax(0, 1.06fr);
+  gap: 19px;
+  max-width: 1536px;
+  margin: 0 auto;
+  padding: 25px 38px 33px;
+}
+.query { gap: 14px; }
+.calculator { padding: 15px 22px 12px; background: #262127; }
+.calculator .form-grid { grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr); }
+.field input { border-color: #493d47; border-radius: 8px; }
+.result {
+  overflow: hidden;
+  padding: 0;
+  background: var(--panel);
+}
+.result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 143px;
+  background: linear-gradient(100deg, #352a2c 0%, #2b2328 73%);
+}
+.result-time { gap: 8px; padding: 10px 5px; color: var(--accent); }
+.result-time h2 { color: #ddc9bd; }
+.result-number { font-size: clamp(54px, 5.3vw, 78px); }
+.result-unit { font-size: 16px; }
+.result-trip { display: grid; align-content: center; align-self: stretch; min-width: 0; gap: 10px; padding: 9px 12px; background: #231e24ba; }
+.result-trip .route { font-size: clamp(15px, 1.45vw, 21px); }
+.distance-pair { gap: 6px; }
+.distance-pair > div { padding: 6px 3px; border: 1px solid #4b3e48; border-radius: 8px; background: #232028; }
+.result.call .result-grid { background: linear-gradient(110deg, #48302d, #33262b 74%); }
+.result.call .result-time { color: var(--call); }
+.add-row { display: flex; justify-content: center; padding: 9px; border-top: 1px solid var(--line); background: #251f26; }
+.add-row .btn { width: min(100%, 275px); }
+.nearby-group { gap: 10px; }
+.nearby { padding: 10px 11px 12px; }
+.nearby h2 { text-align: center; color: var(--text); font-size: 13px; }
+.nearby-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 9px; }
+.nearby-item {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  flex: 0 1 calc((100% - 20px) / 5);
+  min-width: 0;
+  min-height: 52px;
+  padding: 4px 3px;
+  border: 1px solid #49404a;
+  border-radius: 8px;
+  background: #2c252d;
+  text-align: center;
+  white-space: nowrap;
+}
+.nearby-item .name { font-size: 13px; font-weight: 700; }
+.nearby-item .distance { color: var(--accent); font-size: 11px; }
+.nearby-60 .distance { color: #e9c2c9; }
+.log { padding: 17px 17px 12px; background: #251f26; }
+.log-heading { display: grid; gap: 2px; justify-items: center; }
+.log-heading h2 { font-size: 21px; }
+.log-date { color: var(--muted); font-size: 12px; }
+.log-sum { margin-block: 15px 13px; padding-block: 10px; border-block: 1px solid var(--line); background: #2e252b; }
+.sum-box { padding-inline: 2px; }
+.sum-box + .sum-box { border-left: 1px solid #57464e; }
+.sum-value b { font-size: 30px; }
+.log-list { display: grid; gap: 6px; }
+.log-item {
+  display: grid;
+  grid-template-columns: 53px minmax(0, 1fr) 89px;
+  align-items: center;
+  min-height: 58px;
+  padding: 5px 9px;
+  gap: 9px;
+  border: 1px solid #433843;
+  border-radius: 9px;
+  background: #201c22;
+}
+.log-item time { padding-block: 6px; border-right: 1px solid #4a3e49; text-align: center; }
+.log-meta .codes { color: #ddc8d0; }
+.log-item .mins.call { color: var(--call); }
+body[data-duty="staff"] .log-item { grid-template-columns: 53px minmax(0, 1fr) 89px 44px; }
+.log-actions { margin-top: 13px; }
+.log-actions .btn:first-child { flex: 1; }
+.log-actions .btn.secondary { min-width: 106px; }
+.secondary { background: transparent; }
+.duty { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+@media (max-width: 1130px) {
+  .topbar-inner, .workspace { padding-inline: 23px; }
+  .nearby-item { flex-basis: calc((100% - 15px) / 4); }
+}
+@media (max-width: 860px) {
+  .topbar-inner { max-width: 670px; min-height: 70px; padding-inline: 15px; }
+  .workspace { max-width: 670px; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 14px 15px 20px; }
+}
+@media (max-width: 540px) {
+  .topbar-inner { grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; min-height: 64px; }
+  .topbar .brand-mark { width: 38px; height: 33px; }
+  .topbar .brand-name { display: none; }
+  .topbar h1 { font-size: 20px; }
+  .workspace { padding-inline: 14px; }
+  .query { gap: 10px; }
+  .calculator { padding: 11px 10px 9px; }
+  .calculator .form-grid { grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); }
+  .result-grid { min-height: 116px; grid-template-columns: minmax(0, .89fr) minmax(0, 1.11fr); }
+  .result-time { gap: 6px; }
+  .result-number { font-size: 46px; }
+  .result-unit { font-size: 13px; }
+  .result-trip { gap: 6px; padding-inline: 7px; }
+  .result-trip .route { font-size: 13px; }
+  .distance-pair > div { padding: 3px 2px; }
+  .distance-pair dd { font-size: 15px; }
+  .add-row .btn { width: 100%; }
+  .nearby-grid { gap: 5px; }
+  .nearby-item { flex-basis: calc((100% - 10px) / 3); min-height: 45px; }
+  .log { padding-inline: 10px; }
+  .log-heading h2 { font-size: 18px; }
+  .sum-value b { font-size: 25px; }
+  .log-item { grid-template-columns: 37px minmax(0, 1fr) 66px; gap: 5px; padding-inline: 4px; }
+  body[data-duty="staff"] .log-item { grid-template-columns: 37px minmax(0, 1fr) 66px 39px; }
+  .log-item .mins { font-size: 12px; }
+  .log-item .del { min-height: 44px; padding-inline: 5px; }
+}
+
+/* ===== D2 微調版：中性炭灰、欄高對齊、字級加大、結果卡一體化 ===== */
+:root{
+  --bg:#111214;--panel:#1b1c20;--well:#141518;--button:#25272c;--hover:#30333a;--popup:#22242a;
+  --text:#f3f4f6;--muted:#a3a7b0;--line:#2c2f36;--line-bright:#3c4049;
+  --red:#d0223f;--red-hover:#e0304d;
+  --accent:#f5d58a;--accent-soft:#3a3220;--accent-line:#5c4c28;
+  --call:#ff9f7a;--danger:#ff8a9a;--radius:14px;--control-radius:10px;
+}
+body{background:var(--bg)}
+.topbar{background:#16171a;border-bottom-color:var(--line)}
+.topbar-inner,.workspace{max-width:1320px}
+.workspace{align-items:stretch;gap:20px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.query{grid-template-rows:auto auto 1fr}
+.nearby-group{align-content:stretch;grid-template-rows:1fr 1fr}
+.panel{background:var(--panel);border-color:var(--line);box-shadow:0 1px 0 #ffffff08 inset,0 6px 18px #0006}
+.calculator{background:var(--panel);padding:16px 22px 12px}
+.field label{font-size:14px}
+.field input{background:var(--well);border-color:var(--line-bright)}
+.shop-name{font-size:14px;color:#c9ccd3}
+.result{background:var(--panel)}
+.result-grid,.result.call .result-grid{background:none;min-height:150px;padding:14px 14px 0;gap:12px}
+.result-time{border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-line);padding:12px 6px}
+.result.call .result-time{background:#3a241c;border-color:#6b3b2a}
+.result-time h2{color:#e8d9b0;font-size:14px}
+.result-trip{background:none;padding:6px 4px}
+.result-trip .route{font-size:clamp(17px,1.5vw,22px)}
+.distance-pair>div{background:var(--well);border-color:var(--line-bright)}
+.distance-pair dt{font-size:13px}
+.distance-pair dd{font-size:19px}
+.add-row{background:none;border-top:0;padding:14px}
+.add-row .btn{width:100%;min-height:46px;font-size:16px}
+.nearby{display:grid;grid-template-rows:auto 1fr;padding:12px 14px 14px}
+.nearby h2{font-size:15px}
+.nearby-grid{align-content:center}
+.nearby-item{min-height:56px;background:var(--well);border-color:var(--line-bright)}
+.nearby-item .name{font-size:14px}
+.nearby-item .distance{font-size:12px}
+.nearby-60 .distance{color:#f0b5bf}
+.log{background:var(--panel);display:flex;flex-direction:column;padding:18px 18px 14px}
+.log-list{flex:1;align-content:start}
+.log-heading h2{font-size:22px}
+.log-date{font-size:13px}
+.log-sum{background:var(--well);border:1px solid var(--line);border-radius:12px}
+.sum-box+.sum-box{border-left-color:var(--line-bright)}
+.sum-label{font-size:13px}
+.log-item{background:var(--well);border-color:var(--line);min-height:60px}
+.log-item:hover{border-color:var(--line-bright)}
+.log-item time{border-right-color:var(--line-bright);font-size:14px;color:#d3d6dc}
+.log-item .route{font-size:15px}
+.log-meta{font-size:13px}
+.log-meta .codes{color:#c9ccd3}
+.mins{font-size:14px;border-radius:8px;padding:6px 0;background:var(--accent-soft)}
+.mins.call{background:#3a241c}
+.del{border-color:#5a2a33;background:transparent}
+.del:hover:not(:disabled){background:#3a1c22;border-color:#7a3542}
+.log-actions .btn{min-height:44px}
+@media (max-width:860px){.workspace{grid-template-columns:minmax(0,1fr);align-items:start}.query{grid-template-rows:none}.nearby-group{grid-template-rows:none}}
+@media (max-width:540px){
+  .result-grid,.result.call .result-grid{padding:10px 10px 0;gap:8px;min-height:120px}
+  .add-row{padding:10px}
+  .result-trip .route{font-size:14px}
+  .distance-pair dd{font-size:15px}
+  .nearby-item{min-height:48px}
+  .nearby-item .name{font-size:13px}
+  .log{padding:14px 10px 12px}
+  .log-item .route{font-size:13px}
+  .log-meta,.log-item time{font-size:11px}
+  .mins{font-size:12px}
+}
+
+/* 結果卡不顯示正反向公里 */
+.result-trip{align-content:center;justify-items:center}
+.result-trip .route{font-size:clamp(20px,1.9vw,28px);white-space:nowrap}
+@media (max-width:540px){.result-trip .route{font-size:16px}}
+</style>
+</head>
+<body data-duty="guest">
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="brand-lockup"><span class="brand-mark">KFC</span><span class="brand-name">肯德基餐廳</span></span>
+    <h1>調撥工時查詢</h1>
+    <details class="preview" id="preview">
+      <summary class="btn">預覽</summary>
+      <div class="preview-panel">
+        <h3>查詢狀態</h3>
+        <div class="preview-grid">
+          <button class="btn" type="button" data-route="empty" aria-pressed="false">未查詢</button>
+          <button class="btn" type="button" data-route="30" aria-pressed="false">30 分鐘</button>
+          <button class="btn" type="button" data-route="60" aria-pressed="false">60 分鐘</button>
+          <button class="btn" type="button" data-route="90" aria-pressed="false">90 分鐘</button>
+          <button class="btn" type="button" data-route="120" aria-pressed="false">120 分鐘</button>
+          <button class="btn" type="button" data-route="call" aria-pressed="false">致電中心</button>
+        </div>
+        <div class="preview-duty">
+          <h3>值班狀態</h3>
+          <div class="preview-grid">
+            <button class="btn" type="button" data-duty-state="guest" aria-pressed="true">未登入</button>
+            <button class="btn" type="button" data-duty-state="staff" aria-pressed="false">已登入</button>
+          </div>
+          <button class="btn preview-password" id="preview-password" type="button">密碼視窗</button>
+        </div>
+      </div>
+    </details>
+  </div>
+</header>
+<main class="workspace">
+  <div class="query">
+    <section id="calculator" class="panel calculator" aria-label="店號查詢">
+      <div class="form-grid">
+        <div class="field">
+          <label for="from">起點店號</label>
+          <input id="from" type="text" inputmode="numeric" maxlength="8" autocomplete="off" spellcheck="false" placeholder="—" aria-describedby="from-name">
+          <div id="from-name" class="shop-name nowrap" aria-live="polite"></div>
+        </div>
+        <button class="btn swap" id="swap" type="button" aria-label="交換起點與終點">⇄</button>
+        <div class="field">
+          <label for="to">終點店號</label>
+          <input id="to" type="text" inputmode="numeric" maxlength="8" autocomplete="off" spellcheck="false" placeholder="—" aria-describedby="to-name">
+          <div id="to-name" class="shop-name nowrap" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+    <section id="result" class="panel result" aria-labelledby="result-title">
+      <div class="result-grid" aria-live="polite">
+        <div class="result-time">
+          <h2 id="result-title">調撥工時</h2>
+          <p class="result-value" id="result-value"></p>
+        </div>
+        <div class="result-trip">
+          <p class="route nowrap" id="result-route">—</p>
+          <dl class="distance-pair" hidden>
+            <div><dt>本方向</dt><dd id="distance-out">—</dd></div>
+            <div><dt>反向</dt><dd id="distance-back">—</dd></div>
+          </dl>
+        </div>
+      </div>
+      <div class="add-row"><button class="btn primary" type="button" id="add"><span aria-hidden="true">＋</span>加入今日紀錄</button></div>
+    </section>
+    <div class="nearby-group">
+      <section class="panel nearby nearby-30" id="nearby" aria-labelledby="nearby-title-5">
+        <h2 id="nearby-title-5">1-5KM（30分鐘）</h2>
+        <div id="nearby-5" class="nearby-list" aria-live="polite"></div>
+      </section>
+      <section class="panel nearby nearby-60" aria-labelledby="nearby-title-9">
+        <h2 id="nearby-title-9">5-9KM（60分鐘）</h2>
+        <div id="nearby-9" class="nearby-list" aria-live="polite"></div>
+      </section>
+    </div>
+  </div>
+  <section class="panel log" id="records" aria-labelledby="log-title">
+    <header class="log-heading">
+      <h2 id="log-title">今日調撥紀錄</h2>
+      <time class="log-date" id="log-date"></time>
+    </header>
+    <div class="log-sum" aria-live="polite">
+      <div class="sum-box"><span class="sum-label">筆數</span><span class="sum-value"><b id="sum-count"></b> 筆</span></div>
+      <div class="sum-box"><span class="sum-label">合計工時</span><span class="sum-value"><b id="sum-mins"></b> 分鐘</span></div>
+      <div class="sum-box"><span class="sum-label">致電中心</span><span class="sum-value"><b id="sum-call"></b> 筆</span></div>
+    </div>
+    <ul class="log-list" id="log-list"></ul>
+    <div class="log-actions">
+      <button class="btn" type="button" id="copy">複製今日匯總</button>
+      <button class="btn secondary" type="button" id="reload">重新整理</button>
+    </div>
+    <div class="duty" id="duty">
+      <span class="duty-status" id="duty-status"></span>
+      <div class="duty-buttons">
+        <button class="btn" type="button" id="login">值班登入</button>
+        <button class="btn" type="button" id="change" hidden>更改密碼</button>
+        <button class="btn secondary" type="button" id="logout" hidden>登出</button>
+      </div>
+    </div>
+  </section>
+</main>
+<dialog class="modal" id="modal" aria-labelledby="modal-title">
+  <form id="password-form" autocomplete="off">
+    <h2 id="modal-title">值班登入</h2>
+    <div class="modal-fields">
+      <label><span id="pw-label">值班密碼</span><input type="password" id="pw" autocomplete="off" required></label>
+      <label class="new-field" hidden>新密碼<input type="password" id="pw-new" autocomplete="off"></label>
+      <label class="new-field" hidden>確認新密碼<input type="password" id="pw-new2" autocomplete="off"></label>
+    </div>
+    <div class="modal-error" id="pw-err" role="status"></div>
+    <div class="modal-actions">
+      <button class="btn" id="pw-cancel" type="button">取消</button>
+      <button class="btn primary" id="pw-ok" type="submit">登入</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="log-msg" role="status"></div>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const routePresets = { empty: "", 30: "123", 60: "165", 90: "386", 120: "421", call: "469" };
+  const names = {
+    "098": "中壢中正", "123": "中壢環中", "165": "內壢忠孝", "187": "平鎮環南",
+    "207": "平鎮中豐", "239": "中壢中央", "256": "桃園龍安", "271": "八德介壽",
+    "312": "中壢青埔", "355": "楊梅埔心", "386": "桃園藝文", "421": "大溪員林", "469": "龜山萬壽"
+  };
+  // Fixture distances in km, stored in both travel directions.
+  const distances = {
+    "098-123": [3.9, 4.2], "098-165": [6.4, 6.8], "098-187": [3.3, 3.7],
+    "098-207": [4.7, 4.8], "098-239": [2.4, 2.6], "098-256": [7.6, 8.1],
+    "098-271": [7.9, 8.5], "098-312": [8.7, 8.4], "098-355": [5.7, 6.1],
+    "098-386": [11.4, 12.1], "098-421": [14.8, 15.6], "098-469": [17.0, 18.6],
+    "123-165": [3.8, 4.0], "123-187": [2.3, 2.7], "123-207": [4.1, 4.1],
+    "123-239": [2.8, 3.2], "123-256": [4.4, 4.6], "123-271": [4.0, 4.8],
+    "123-312": [3.7, 3.9], "123-355": [6.6, 6.3], "123-386": [7.2, 7.5]
+  };
+  const taipeiDate = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" });
+  const taipeiTime = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+  });
+  const routeButtons = [...document.querySelectorAll("[data-route]")];
+  const dutyButtons = [...document.querySelectorAll("[data-duty-state]")];
+  const newFields = [...document.querySelectorAll(".new-field")];
+  const modal = $("modal");
+  const passwordForm = $("password-form");
+
+  let current = null;
+  let recordsDay = "";
+  let logs = [];
+  let sequence = 6;
+  let staff = false;
+  let passwordMode = "login";
+  let pendingTrip = null;
+  let toastTimer;
+
+  function ruleFor(km) {
+    if (km <= 5) return 30;
+    if (km <= 9) return 60;
+    if (km <= 13) return 90;
+    if (km <= 17) return 120;
+    return null;
+  }
+
+  function trip(from, to) {
+    const pair = distances[[from, to].sort().join("-")];
+    if (!pair) return null;
+    const [out, back] = from < to ? pair : [pair[1], pair[0]];
+    const basis = Math.max(out, back);
+    return { from, to, out, back, basis, minutes: ruleFor(basis) };
+  }
+
+  function routeLabel({ from, to }) {
+    return names[from] + " → " + names[to];
+  }
+
+  function minutesLabel(minutes) {
+    return minutes === null ? "致電中心" : minutes + " 分鐘";
+  }
+
+  function showName(input, label) {
+    const value = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const fullCode = /^TW[A-Z](\d{3})$/.exec(value);
+    const code = /^\d{1,3}$/.test(value) ? value.padStart(3, "0") : fullCode?.[1];
+    const valid = Object.hasOwn(names, code);
+    const bad = Boolean(value) && !valid;
+    label.textContent = valid ? names[code] : bad ? "查無此店號" : "—";
+    label.classList.toggle("bad", bad);
+    input.setAttribute("aria-invalid", String(bad));
+    return valid ? code : null;
+  }
+
+  function renderNearby(container, trips) {
+    if (!trips.length) {
+      container.innerHTML = '<p class="nearby-empty">—</p>';
+      return;
+    }
+    const rows = trips.map((item) => (
+      '<li class="nearby-item"><span class="name">' + names[item.to] + '</span>' +
+      '<span class="distance">' + minutesLabel(item.minutes) + '</span></li>'
+    ));
+    container.innerHTML = '<ul class="nearby-grid">' + rows.join("") + '</ul>';
+  }
+
+  function setDistance(element, km) {
+    element.classList.toggle("high", km > 17);
+    element.innerHTML = km === undefined ? "—" : km.toFixed(1) + ' <small>km</small>';
+  }
+
+  function update() {
+    const from = showName($("from"), $("from-name"));
+    const to = showName($("to"), $("to-name"));
+    const nearby = from ? Object.keys(names)
+      .map((code) => trip(from, code))
+      .filter(Boolean)
+      .sort((a, b) => a.basis - b.basis) : [];
+    renderNearby($("nearby-5"), nearby.filter((item) => item.minutes === 30));
+    renderNearby($("nearby-9"), nearby.filter((item) => item.minutes === 60));
+
+    current = from && to ? trip(from, to) : null;
+    const isCall = current?.minutes === null;
+    $("result").classList.toggle("call", isCall);
+    $("result").classList.toggle("empty", !current);
+    $("result-value").innerHTML = isCall
+      ? '<span class="result-call">致電中心</span>'
+      : current
+        ? '<b class="result-number">' + current.minutes + '</b><span class="result-unit">分鐘</span>'
+        : '<span class="empty-value">—</span>';
+    $("result-route").textContent = current ? routeLabel(current)
+      : from && to ? (from === to ? "起點與終點相同" : "查無路線") : "—";
+    $("result-route").classList.toggle("invalid", !current);
+    setDistance($("distance-out"), current?.out);
+    setDistance($("distance-back"), current?.back);
+    $("add").disabled = !current;
+
+    const activePreset = current && from === "098"
+      ? (isCall ? "call" : String(current.minutes))
+      : !$("from").value && !$("to").value ? "empty" : "";
+    routeButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.route === activePreset));
+    });
+  }
+
+  function notify(message) {
+    clearTimeout(toastTimer);
+    $("log-msg").textContent = message;
+    toastTimer = setTimeout(() => { $("log-msg").textContent = ""; }, 2800);
+  }
+
+  function seedLogs() {
+    return [
+      ["14:32", "098", "165"],
+      ["13:08", "469", "098"],
+      ["11:46", "386", "098"],
+      ["10:21", "098", "421"],
+      ["09:12", "123", "098"]
+    ].map(([time, from, to], index) => ({ id: index + 1, time, ...trip(from, to) }));
+  }
+
+  function stats() {
+    return {
+      count: logs.length,
+      minutes: logs.reduce((sum, item) => sum + (item.minutes ?? 0), 0),
+      calls: logs.filter((item) => item.minutes === null).length
+    };
+  }
+
+  function renderLogs() {
+    const totals = stats();
+    $("sum-count").textContent = totals.count;
+    $("sum-mins").textContent = totals.minutes;
+    $("sum-call").textContent = totals.calls;
+    $("copy").disabled = !logs.length;
+    $("log-list").innerHTML = logs.map((item) => {
+      const route = routeLabel(item);
+      const km = item.out.toFixed(1) + ' / ' + item.back.toFixed(1) + ' km';
+      const minutes = minutesLabel(item.minutes);
+      return '<li class="log-item"><time datetime="' + item.time + '">' + item.time + '</time>' +
+        '<div class="log-route"><p class="route">' + route + '</p>' +
+        '<p class="log-meta"><span class="codes">' + item.from + ' → ' + item.to + '</span><span>' + km + '</span></p></div>' +
+        '<span class="mins' + (item.minutes === null ? ' call' : '') + '">' + minutes + '</span>' +
+        (staff ? '<button class="btn del" type="button" data-id="' + item.id + '" aria-label="刪除 ' + route + ' ' + item.time + ' 的紀錄">刪除</button>' : '') +
+        '</li>';
+    }).join("") || '<li class="log-empty">尚無紀錄</li>';
+  }
+
+  function refreshDay() {
+    const date = taipeiDate.format(new Date());
+    if (!recordsDay) logs = seedLogs();
+    else if (recordsDay !== date) logs = [];
+    recordsDay = date;
+    $("log-date").dateTime = date;
+    $("log-date").textContent = date.replaceAll("-", ".");
+  }
+
+  function setDuty(isStaff) {
+    staff = isStaff;
+    document.body.dataset.duty = staff ? "staff" : "guest";
+    $("duty-status").textContent = staff ? "值班已登入" : "值班未登入";
+    $("login").hidden = staff;
+    $("change").hidden = !staff;
+    $("logout").hidden = !staff;
+    dutyButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.dutyState === document.body.dataset.duty));
+    });
+    renderLogs();
+  }
+
+  function openPassword(mode, afterLogin = null) {
+    passwordMode = mode;
+    pendingTrip = afterLogin;
+    passwordForm.reset();
+    $("pw-err").textContent = "";
+    const change = mode === "change";
+    $("modal-title").textContent = change ? "更改密碼" : "值班登入";
+    $("pw-label").textContent = change ? "目前密碼" : "值班密碼";
+    $("pw-ok").textContent = change ? "儲存" : "登入";
+    newFields.forEach((label) => { label.hidden = !change; });
+    $("pw-new").required = change;
+    $("pw-new2").required = change;
+    modal.showModal();
+    $("pw").focus();
+  }
+
+  function addLog(item) {
+    refreshDay();
+    logs.unshift({ ...item, id: sequence++, time: taipeiTime.format(new Date()) });
+    renderLogs();
+    notify("已加入今日紀錄");
+  }
+
+  function submitPassword(event) {
+    event.preventDefault();
+    if (!$("pw").value.trim()) {
+      $("pw-err").textContent = "請輸入密碼";
+      return;
+    }
+    const changed = passwordMode === "change";
+    if (changed) {
+      if ($("pw-new").value.trim().length < 4) {
+        $("pw-err").textContent = "新密碼至少 4 個字";
+        return;
+      }
+      if ($("pw-new").value !== $("pw-new2").value) {
+        $("pw-err").textContent = "新密碼不一致";
+        return;
+      }
+    }
+    const item = pendingTrip;
+    // This preview simulates submission and immediately clears the inputs.
+    modal.close();
+    setDuty(true);
+    if (item) addLog(item);
+    else notify(changed ? "密碼已更改" : "值班已登入");
+  }
+
+  async function copySummary() {
+    refreshDay();
+    renderLogs();
+    const totals = stats();
+    if (!totals.count) return;
+    const date = recordsDay.slice(5).replace("-", "/");
+    const heading = date + " 調撥匯總（共 " + totals.count + " 筆，合計 " + totals.minutes + " 分鐘" +
+      (totals.calls ? "，另 " + totals.calls + " 筆致電中心" : "") + "）";
+    const lines = logs.map((item, index) => (index + 1) + ". " + item.time + " " + routeLabel(item) + "｜" + minutesLabel(item.minutes));
+    const content = [heading, ...lines].join("\n");
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch {
+      const copyField = document.createElement("textarea");
+      copyField.value = content;
+      copyField.readOnly = true;
+      copyField.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none;";
+      document.body.append(copyField);
+      copyField.select();
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } catch {
+        copied = false;
+      } finally {
+        copyField.remove();
+        $("copy").focus();
+      }
+      if (!copied) {
+        notify("複製失敗");
+        return;
+      }
+    }
+    notify("已複製今日匯總");
+  }
+
+  function selectRoute(preset) {
+    $("from").value = preset === "empty" ? "" : "098";
+    $("to").value = routePresets[preset];
+    update();
+  }
+
+  ["from", "to"].forEach((id) => $(id).addEventListener("input", update));
+  $("swap").addEventListener("click", () => {
+    [$("from").value, $("to").value] = [$("to").value, $("from").value];
+    update();
+  });
+  $("add").addEventListener("click", () => {
+    if (!current) return;
+    if (staff) addLog(current);
+    else openPassword("login", current);
+  });
+  $("copy").addEventListener("click", copySummary);
+  $("reload").addEventListener("click", () => {
+    refreshDay();
+    renderLogs();
+    notify("紀錄已重新整理");
+  });
+  $("login").addEventListener("click", () => openPassword("login"));
+  $("change").addEventListener("click", () => openPassword("change"));
+  $("logout").addEventListener("click", () => {
+    setDuty(false);
+    $("login").focus();
+  });
+  $("log-list").addEventListener("click", (event) => {
+    const button = event.target.closest(".del");
+    if (!staff || !button) return;
+    const id = Number(button.dataset.id);
+    const item = logs.find((entry) => entry.id === id);
+    if (!item || !window.confirm("刪除這筆紀錄？\n" + routeLabel(item))) return;
+    logs = logs.filter((entry) => entry.id !== id);
+    renderLogs();
+    ($("log-list").querySelector(".del") ?? $("reload")).focus();
+    notify("紀錄已刪除");
+  });
+
+  passwordForm.addEventListener("submit", submitPassword);
+  modal.addEventListener("close", () => {
+    passwordForm.reset();
+    pendingTrip = null;
+  });
+  $("pw-cancel").addEventListener("click", () => modal.close());
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) modal.close();
+  });
+
+  const preview = $("preview");
+  const previewToggle = preview.querySelector("summary");
+  routeButtons.forEach((button) => button.addEventListener("click", () => {
+    selectRoute(button.dataset.route);
+    preview.open = false;
+    previewToggle.focus();
+  }));
+  dutyButtons.forEach((button) => button.addEventListener("click", () => {
+    setDuty(button.dataset.dutyState === "staff");
+    preview.open = false;
+    previewToggle.focus();
+  }));
+  $("preview-password").addEventListener("click", () => {
+    preview.open = false;
+    previewToggle.focus();
+    openPassword(staff ? "change" : "login");
+  });
+  document.addEventListener("click", (event) => {
+    if (!preview.contains(event.target)) preview.open = false;
+  });
+  preview.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    preview.open = false;
+    previewToggle.focus();
+  });
+  const navigation = [...document.querySelectorAll(".side-nav a")];
+  navigation.forEach((link) => link.addEventListener("click", () => {
+    navigation.forEach((item) => item.removeAttribute("aria-current"));
+    link.setAttribute("aria-current", "location");
+  }));
+
+  refreshDay();
+  selectRoute("60");
+  setDuty(true);
+})();
+</script>
+</body>
+</html>
