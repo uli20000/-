@@ -440,6 +440,20 @@ body{background:var(--bg)}
 .log-route{min-width:0;overflow:hidden}.log-route .route{overflow:hidden;text-overflow:ellipsis}
 @media (max-width:540px){.log-item .route{font-size:12px;letter-spacing:-.02em}}
 .del{min-height:34px}
+.req{display:inline-flex;align-items:center;margin-left:8px;padding:0 7px;border-radius:6px;background:#23303a;color:#9fd0f0;font-size:12px;white-space:nowrap}
+button.req{border:1px dashed #3d5566;background:transparent;cursor:pointer;min-height:22px}
+button.req:hover{background:#23303a}
+.req-sum{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--well)}
+.req-sum h3{margin-bottom:8px;text-align:center;font-size:15px}
+.req-table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.req-table th{color:var(--muted);font-size:12px;font-weight:600;padding:4px 6px;border-bottom:1px solid var(--line)}
+.req-table td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.req-table tr:last-child td{border-bottom:0}
+.req-table td:first-child,.req-table th:first-child{text-align:left}
+.req-table .mins-cell{color:var(--accent);font-weight:750}
+.req-table .none td:first-child{color:var(--muted)}
+.req-name{min-height:20px;margin-top:6px;color:#c9ccd3;font-size:13px;text-align:center}.req-name.bad{color:var(--danger)}
+.req-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
 </style>
 </head>
 <body data-duty="guest">
@@ -499,6 +513,7 @@ body{background:var(--bg)}
       <div class="sum-box"><span class="sum-label">致電中心</span><span class="sum-value"><b id="sum-call">—</b> 筆</span></div>
     </div>
     <ul class="log-list" id="log-list"><li class="log-empty">讀取中…</li></ul>
+    <div class="req-sum" id="req-sum" hidden><h3>各申請餐廳工時</h3><table class="req-table"><thead><tr><th>申請餐廳</th><th>筆數</th><th>工時</th><th>致電中心</th></tr></thead><tbody id="req-body"></tbody></table></div>
     <div class="log-actions">
       <button class="btn" type="button" id="copy">複製今日匯總</button>
       <button class="btn secondary" type="button" id="reload">重新整理</button>
@@ -507,6 +522,13 @@ body{background:var(--bg)}
   </section>
 </main>
 
+<div class="modal-backdrop" id="req-modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="req-title">
+  <h2 id="req-title">申請餐廳</h2><p class="modal-desc" id="req-route"></p>
+  <div class="modal-fields"><input type="text" id="req-code" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="店號" style="text-align:center;font-size:20px"></div>
+  <div class="req-name" id="req-name">&nbsp;</div>
+  <div class="modal-error" id="req-err" role="status"></div>
+  <div class="req-actions"><button class="btn" type="button" id="req-cancel">取消</button><button class="btn secondary" type="button" id="req-clear">清除</button><button class="btn primary" type="button" id="req-ok">儲存</button></div>
+</div></div>
 <div class="modal-backdrop" id="modal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <h2 id="modal-title">值班登入</h2><p class="modal-desc" id="modal-desc"></p>
   <div class="modal-fields">
@@ -602,13 +624,46 @@ function renderLogs(){
   $('sum-count').textContent=logs.length;
   $('sum-mins').textContent=total;$('sum-call').textContent=calls;
   const canDel=document.body.dataset.duty==='staff';
-  $('log-list').innerHTML=logs.length?logs.map(l=>{const t=taipeiTime(l.created_at);return '<li class="log-item"><time>'+t+'</time><div class="log-route"><p class="route">'+esc(shortName(l.from_name))+' → '+esc(shortName(l.to_name))+'</p><p class="log-meta"><span class="codes">'+esc(l.from_code.slice(3))+' → '+esc(l.to_code.slice(3))+'</span></p></div><span class="mins'+(l.minutes==null?' call':'')+'">'+(l.minutes==null?'致電中心':l.minutes+' 分鐘')+'</span>'+(canDel?'<button class="btn del" type="button" data-id="'+esc(l.id)+'">刪除</button>':'')+'</li>';}).join(''):'<li class="log-empty">今天還沒有紀錄</li>';
+  $('log-list').innerHTML=logs.length?logs.map(l=>{const t=taipeiTime(l.created_at);return '<li class="log-item"><time>'+t+'</time><div class="log-route"><p class="route">'+esc(shortName(l.from_name))+' → '+esc(shortName(l.to_name))+'</p><p class="log-meta"><span class="codes">'+esc(l.from_code.slice(3))+' → '+esc(l.to_code.slice(3))+'</span>'+reqTag(l,canDel)+'</p></div><span class="mins'+(l.minutes==null?' call':'')+'">'+(l.minutes==null?'致電中心':l.minutes+' 分鐘')+'</span>'+(canDel?'<button class="btn del" type="button" data-id="'+esc(l.id)+'">刪除</button>':'')+'</li>';}).join(''):'<li class="log-empty">今天還沒有紀錄</li>';
   document.querySelectorAll('.del').forEach(b=>b.onclick=()=>delLog(b.dataset.id));
+  document.querySelectorAll('button.req').forEach(b=>b.onclick=()=>openReq(b.dataset.id));
+  renderReqSum();
+}
+function reqTag(l,canEdit){
+  if(canEdit)return '<button class="req" type="button" data-id="'+esc(l.id)+'">'+(l.req_code?'申請：'+esc(shortName(l.req_name)):'＋申請店')+'</button>';
+  return l.req_code?'<span class="req">申請：'+esc(shortName(l.req_name))+'</span>':'';
+}
+function renderReqSum(){
+  if(!logs.length){$('req-sum').hidden=true;return;}
+  const map=new Map();
+  logs.forEach(l=>{const k=l.req_code||'';if(!map.has(k))map.set(k,{name:l.req_code?shortName(l.req_name):'未指定',n:0,mins:0,calls:0});const r=map.get(k);r.n++;if(l.minutes==null)r.calls++;else r.mins+=l.minutes;});
+  const rows=[...map.entries()].sort((a,b)=>(a[0]===''?1:0)-(b[0]===''?1:0)||b[1].mins-a[1].mins);
+  $('req-body').innerHTML=rows.map(([k,r])=>'<tr'+(k?'':' class="none"')+'><td>'+esc(r.name)+'</td><td>'+r.n+'</td><td class="mins-cell">'+r.mins+' 分鐘</td><td>'+(r.calls||'—')+'</td></tr>').join('');
+  $('req-sum').hidden=false;
+}
+let reqId=null;
+function openReq(id){
+  const l=logs.find(x=>x.id===id);if(!l)return;reqId=id;
+  $('req-route').textContent=taipeiTime(l.created_at)+'　'+shortName(l.from_name)+' → '+shortName(l.to_name);
+  $('req-code').value=l.req_code?l.req_code.slice(3):'';$('req-err').textContent='';showReqName();
+  $('req-modal').hidden=false;setTimeout(()=>$('req-code').focus(),30);
+}
+function showReqName(){const r=findByCode($('req-code').value);const el=$('req-name');el.className='req-name'+(r.state==='bad'?' bad':'');el.innerHTML=r.state==='ok'?esc(r.shop.shortName):r.state==='bad'?'查無此店號':'&nbsp;';return r;}
+function closeReq(){$('req-modal').hidden=true;reqId=null;}
+async function saveReq(clear){
+  if(!reqId)return;
+  if(!getPw()){closeReq();openModal(null,'login');return;}
+  let code=null,name=null;
+  if(!clear){const r=showReqName();if(r.state!=='ok'){$('req-err').textContent='請輸入正確店號';return;}code=r.shop.code;name=r.shop.shortName;}
+  $('req-ok').disabled=$('req-clear').disabled=true;$('req-err').textContent='儲存中…';
+  try{await rpc('t995_transfer_set_req',{p_password:getPw(),p_id:reqId,p_req_code:code,p_req_name:name});closeReq();await loadLogs();$('log-msg').textContent=clear?'已清除申請餐廳':'已設定申請餐廳';}
+  catch(e){if(e.bad){setPw('');renderDuty();renderLogs();closeReq();$('log-msg').textContent='值班密碼已變更，請重新登入';}else $('req-err').textContent=e.missing?'功能尚未啟用':'儲存失敗，請稍後再試';}
+  finally{$('req-ok').disabled=$('req-clear').disabled=false;}
 }
 async function loadLogs(){
   const d=taipeiToday();const [y,m,dd]=d.split('-');
   $('log-date').textContent=y+'.'+m+'.'+dd;
-  try{logs=await rpc('t995_transfer_list',{p_date:d})||[];$('log-msg').textContent='';renderLogs();}
+  try{logs=await rpc('t995_transfer_list2',{p_date:d})||[];$('log-msg').textContent='';renderLogs();}
   catch(e){logs=[];renderLogs();$('log-list').innerHTML='<li class="log-empty">'+(e.missing?'紀錄功能尚未啟用':'讀取失敗，請稍後再試')+'</li>';$('sum-count').textContent='—';$('sum-mins').textContent='—';$('sum-call').textContent='—';}
 }
 const MODAL={
@@ -670,7 +725,10 @@ async function copySummary(){
 
 $('from').addEventListener('input',update);$('to').addEventListener('input',update);
 $('swap').addEventListener('click',()=>{const v=$('from').value;$('from').value=$('to').value;$('to').value=v;update();});
-$('copy').addEventListener('click',copySummary);$('add').addEventListener('click',addLog);
+$('copy').addEventListener('click',copySummary);
+$('req-code').addEventListener('input',showReqName);$('req-code').addEventListener('keydown',e=>{if(e.key==='Enter')saveReq(false);});
+$('req-ok').addEventListener('click',()=>saveReq(false));$('req-clear').addEventListener('click',()=>saveReq(true));$('req-cancel').addEventListener('click',closeReq);
+$('req-modal').addEventListener('click',e=>{if(e.target===$('req-modal'))closeReq();});$('add').addEventListener('click',addLog);
 let toastTimer;new MutationObserver(()=>{clearTimeout(toastTimer);const el=$('log-msg');if(el.textContent&&!/中…$/.test(el.textContent))toastTimer=setTimeout(()=>{el.textContent='';},2600);}).observe($('log-msg'),{childList:true,characterData:true,subtree:true});$('reload').addEventListener('click',loadLogs);
 $('pw-ok').addEventListener('click',submitPw);$('pw-cancel').addEventListener('click',closeModal);
 ['pw','pw-new','pw-new2'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')submitPw();}));
