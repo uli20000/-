@@ -109,3 +109,7 @@ select cron.schedule('t995_transfer_logs_retention_7d', '5 16 * * *',
 alter table public.t995_transfer_logs add column if not exists deleted_at timestamptz;
 -- list 多加條件：and l.deleted_at is null
 -- delete 改為：update public.t995_transfer_logs set deleted_at = now() where id = p_id and deleted_at is null;
+
+-- ===== 2026-11-23 加：網頁上設定／更改值班密碼 =====
+-- t995_transfer_has_password()：是否已設密碼
+-- t995_transfer_set_password(p_old, p_new)：還沒設過時直接設；設過要舊密碼正確才能改。新密碼 4–64 字。

@@ -37,7 +37,7 @@
 .modal{position:fixed;inset:0;background:rgba(41,37,33,.45);display:grid;place-items:center;padding:20px;z-index:10}.modal[hidden]{display:none}
 .modal-box{width:100%;max-width:360px;padding:24px}.modal-box h3{margin:0 0 6px;color:var(--red-dark);font-size:22px}.modal-box p{margin:0 0 14px;color:var(--muted);font-size:14px}
 .modal-box input{width:100%;height:52px;border:1px solid #d4c7b8;border-radius:10px;padding:0 12px;font:inherit;text-align:center;outline:none}.modal-box input:focus{border-color:var(--red);box-shadow:0 0 0 3px #ffe1e7}
-.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.modal-err{min-height:21px;margin-top:8px;color:var(--red);font-size:14px}
+.modal-box input+input{margin-top:10px}.modal-box input[hidden]{display:none}.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.modal-err{min-height:21px;margin-top:8px;color:var(--red);font-size:14px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.wrap{padding:30px 16px 44px}.hero h1{font-size:30px}.calculator{padding:22px 18px}.form-grid{grid-template-columns:1fr;gap:6px}.swap{width:100%;height:40px;margin:0}.button{width:100%}.log-actions .button{width:auto;flex:1}.nearby-list{grid-template-columns:1fr}.result,.nearby,.log{padding:20px 16px}.log-item{padding:10px 11px;column-gap:8px}.log-item .route{font-size:15px}.log-item .km{font-size:12px}.del{padding:0 8px}.nearby h2,.log h2{font-size:20px;white-space:nowrap}}
 </style></head><body><main class="wrap">
@@ -68,8 +68,10 @@
 </main>
 
 <div class="modal" id="modal" hidden><div class="card modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-<h3 id="modal-title">值班登入</h3><p>新增、刪除紀錄需要值班密碼。<br>這台裝置會記住，下次不用再輸入。</p>
+<h3 id="modal-title">值班登入</h3><p id="modal-desc"></p>
 <input type="password" id="pw" autocomplete="current-password" placeholder="值班密碼">
+<input type="password" id="pw-new" autocomplete="new-password" placeholder="新密碼（至少 4 個字）">
+<input type="password" id="pw-new2" autocomplete="new-password" placeholder="再輸入一次新密碼">
 <div class="modal-err" id="pw-err"></div>
 <div class="modal-actions"><button class="button ghost" type="button" id="pw-cancel">取消</button><button class="button" type="button" id="pw-ok">登入</button></div>
 </div></div>
@@ -81,7 +83,7 @@ const API_KEY='sb_publishable_YieSqh1zXq8wIvQiO9B_wg_ZbDkne7G';
 const PW_KEY='diaobo_duty_pw';
 const $=id=>document.getElementById(id);
 const shops=DATA.shops.map((s,index)=>({...s,index}));
-let current=null, logs=[], pendingAction=null;
+let current=null, logs=[], pendingAction=null, modalMode='login', hasPw=null;
 
 function esc(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function displayKm(m){return Math.ceil(m/100)/10;}
@@ -139,11 +141,19 @@ async function rpc(name,body){
   return data;
 }
 function renderDuty(){
-  $('duty').innerHTML=getPw()?'值班已登入　<button type="button" id="logout">登出</button>':'新增、刪除紀錄需值班登入　<button type="button" id="login">值班登入</button>';
-  const lo=$('logout'),li=$('login');
-  if(lo)lo.onclick=()=>{setPw('');renderDuty();renderLogs();};
-  if(li)li.onclick=()=>openModal(null);
+  let h;
+  if(hasPw===false)h='尚未設定值班密碼　<button type="button" id="setup">設定密碼</button>';
+  else if(getPw())h='值班已登入　<button type="button" id="change">更改密碼</button>　<button type="button" id="logout">登出</button>';
+  else h='新增、刪除紀錄需值班登入　<button type="button" id="login">值班登入</button>';
+  $('duty').innerHTML=h;
+  const on=(id,fn)=>{const el=$(id);if(el)el.onclick=fn;};
+  on('logout',()=>{setPw('');renderDuty();renderLogs();});
+  on('login',()=>openModal(null,'login'));
+  on('setup',()=>openModal(null,'setup'));
+  on('change',()=>openModal(null,'change'));
 }
+async function loadHasPw(){try{hasPw=await rpc('t995_transfer_has_password',{});}catch(e){hasPw=null;}renderDuty();}
+
 function renderLogs(){
   const total=logs.reduce((s,l)=>s+(l.minutes||0),0),calls=logs.filter(l=>l.minutes==null).length;
   $('sum-count').textContent=logs.length;
@@ -158,15 +168,34 @@ async function loadLogs(){
   try{logs=await rpc('t995_transfer_list',{p_date:d})||[];$('log-msg').textContent='';renderLogs();}
   catch(e){logs=[];renderLogs();$('log-list').innerHTML='<div class="log-empty">'+(e.missing?'紀錄功能尚未啟用':'讀取失敗，請稍後再試')+'</div>';$('sum-count').textContent='—';$('sum-mins').textContent='—';$('sum-call').textContent='';}
 }
-function openModal(action){pendingAction=action;$('pw').value='';$('pw-err').textContent='';$('modal').hidden=false;setTimeout(()=>$('pw').focus(),30);}
+const MODAL={
+  login:{title:'值班登入',desc:'新增、刪除紀錄需要值班密碼。<br>這台裝置會記住，下次不用再輸入。',ok:'登入',old:true,nw:false},
+  setup:{title:'設定值班密碼',desc:'第一次使用，請設定值班密碼。<br>之後新增、刪除紀錄都要用這組密碼。',ok:'設定',old:false,nw:true},
+  change:{title:'更改值班密碼',desc:'請輸入目前的密碼和新密碼。<br>改完後其他裝置要重新登入。',ok:'更改',old:true,nw:true}
+};
+function openModal(action,mode){
+  if(!mode)mode=hasPw===false?'setup':'login';
+  pendingAction=action;modalMode=mode;const m=MODAL[mode];
+  $('modal-title').textContent=m.title;$('modal-desc').innerHTML=m.desc;$('pw-ok').textContent=m.ok;
+  $('pw').hidden=!m.old;$('pw').placeholder=mode==='change'?'目前的密碼':'值班密碼';
+  $('pw-new').hidden=!m.nw;$('pw-new2').hidden=!m.nw;
+  ['pw','pw-new','pw-new2'].forEach(id=>$(id).value='');$('pw-err').textContent='';
+  $('modal').hidden=false;setTimeout(()=>$(m.old?'pw':'pw-new').focus(),30);
+}
 function closeModal(){$('modal').hidden=true;pendingAction=null;}
 async function submitPw(){
-  const v=$('pw').value.trim();if(!v){$('pw-err').textContent='請輸入密碼';return;}
+  const mode=modalMode,m=MODAL[mode],v=$('pw').value.trim(),n1=$('pw-new').value.trim(),n2=$('pw-new2').value.trim();
+  if(m.old&&!v){$('pw-err').textContent='請輸入密碼';return;}
+  if(m.nw){if(n1.length<4){$('pw-err').textContent='新密碼至少 4 個字';return;}if(n1!==n2){$('pw-err').textContent='兩次輸入的新密碼不一樣';return;}}
   $('pw-ok').disabled=true;$('pw-err').textContent='確認中…';
-  try{const ok=await rpc('t995_transfer_check',{p_password:v});
-    if(!ok){$('pw-err').textContent='密碼不正確';return;}
-    setPw(v);const act=pendingAction;closeModal();renderDuty();renderLogs();if(act)act();
-  }catch(e){$('pw-err').textContent=e.missing?'紀錄功能尚未啟用':'連線失敗，請稍後再試';}
+  try{
+    let finalPw=v;
+    if(m.nw){await rpc('t995_transfer_set_password',{p_old:v||null,p_new:n1});finalPw=n1;hasPw=true;}
+    else{const ok=await rpc('t995_transfer_check',{p_password:v});if(!ok){$('pw-err').textContent='密碼不正確';return;}}
+    setPw(finalPw);const act=pendingAction;closeModal();renderDuty();renderLogs();
+    $('log-msg').textContent=mode==='setup'?'值班密碼已設定':mode==='change'?'值班密碼已更改':'';
+    if(act)act();
+  }catch(e){$('pw-err').textContent=e.bad?(mode==='setup'?'密碼已有人設定，請改用值班登入':'目前的密碼不正確'):e.missing?'紀錄功能尚未啟用':'連線失敗，請稍後再試';if(e.bad&&mode==='setup'){hasPw=true;renderDuty();}}
   finally{$('pw-ok').disabled=false;}
 }
 async function addLog(){
@@ -175,7 +204,7 @@ async function addLog(){
   $('add').disabled=true;msg.textContent='新增中…';
   try{await rpc('t995_transfer_add',{p_password:getPw(),p_from_code:c.a.code,p_from_name:c.a.shortName,p_to_code:c.b.code,p_to_name:c.b.shortName,p_out_km:c.out,p_back_km:c.back,p_minutes:c.minutes});
     msg.textContent='已加入：'+shortName(c.a.shortName)+' → '+shortName(c.b.shortName);await loadLogs();}
-  catch(e){if(e.bad){setPw('');renderDuty();msg.textContent='值班密碼已變更，請重新登入';openModal(addLog);}else msg.textContent=e.missing?'紀錄功能尚未啟用':'新增失敗，請稍後再試';}
+  catch(e){if(e.bad){setPw('');renderDuty();msg.textContent='值班密碼已變更，請重新登入';openModal(addLog,'login');}else msg.textContent=e.missing?'紀錄功能尚未啟用':'新增失敗，請稍後再試';}
   finally{const b=$('add');if(b)b.disabled=false;}
 }
 async function delLog(id){
@@ -200,7 +229,7 @@ $('from').addEventListener('input',update);$('to').addEventListener('input',upda
 $('swap').addEventListener('click',()=>{const v=$('from').value;$('from').value=$('to').value;$('to').value=v;update();});
 $('copy').addEventListener('click',copySummary);$('reload').addEventListener('click',loadLogs);
 $('pw-ok').addEventListener('click',submitPw);$('pw-cancel').addEventListener('click',closeModal);
-$('pw').addEventListener('keydown',e=>{if(e.key==='Enter')submitPw();});
+['pw','pw-new','pw-new2'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')submitPw();}));
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal();});
-renderDuty();update();loadLogs();
+renderDuty();update();loadLogs();loadHasPw();
 </script></body></html>
