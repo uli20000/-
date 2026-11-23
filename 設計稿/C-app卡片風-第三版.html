@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+  <title>肯德基餐廳調撥工時查詢｜C 版設計稿</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #fffcf8;
+      --paper: #fff;
+      --ink: #2e2623;
+      --muted: #6e605b;
+      --line: #eadfd7;
+      --wash: #f7f1eb;
+      --red: #a80e2d;
+      --pink: #fff1f3;
+      --amber: #79430b;
+      --amber-wash: #fcf0de;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-size: 14px;
+      font-synthesis: none;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); }
+    h1, h2, h3, p, ul, ol { margin: 0; }
+    ul, ol { padding: 0; list-style: none; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; white-space: nowrap; }
+    :focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+    .wrap {
+      display: grid;
+      gap: 7px;
+      width: min(100%, 516px);
+      margin-inline: auto;
+      padding: 10px 12px 12px;
+      text-align: center;
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+    }
+    .hero { position: relative; padding: 1px 0 2px; }
+    .brand {
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      color: var(--muted); font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .brand i {
+      width: 17px; height: 9px;
+      background: repeating-linear-gradient(90deg, var(--red) 0 3px, transparent 3px 6px);
+    }
+    .brand b { color: var(--red); font-size: 12px; letter-spacing: .025em; }
+    .hero h1 { margin-top: 1px; font-size: 25px; line-height: 1.18; letter-spacing: .02em; white-space: nowrap; }
+    .hero p { margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.2; white-space: nowrap; }
+    .button, .preview-toggle {
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+      min-height: 31px; padding: 0 10px; border: 1px solid transparent; border-radius: 9px;
+      background: var(--red); color: white; font-size: 13px; font-weight: 700;
+    }
+    .button:hover { background: #890924; }
+    .button.ghost, .preview-toggle { border-color: var(--line); background: var(--paper); color: var(--ink); }
+    .button.ghost:hover, .preview-toggle:hover { background: var(--wash); }
+    .button.small { font-size: 12px; }
+    .preview-toggle { position: absolute; top: 0; right: 0; min-height: 28px; border-radius: 999px; font-size: 11px; }
+    .preview-toggle span { color: var(--red); }
+    .preview-menu {
+      position: fixed; inset: 43px max(12px, calc((100vw - 492px) / 2)) auto auto;
+      width: min(270px, calc(100vw - 24px)); margin: 0; padding: 10px;
+      border: 1px solid var(--line); border-radius: 15px;
+      background: var(--paper); color: var(--ink); box-shadow: 0 10px 28px #49281924; text-align: center;
+    }
+    .preview-menu p { margin-bottom: 7px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .preview-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+    .preview-options button {
+      min-height: 34px; padding: 0 3px; border: 1px solid var(--line); border-radius: 8px;
+      background: var(--paper); font-size: 12px; font-weight: 700;
+    }
+    .preview-options button:hover, .preview-options [aria-pressed="true"] {
+      border-color: #e8b9c2; color: var(--red); background: var(--pink);
+    }
+    .card { border: 1px solid var(--line); border-radius: 15px; background: var(--paper); }
+    .calculator { padding: 6px 10px; }
+    .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr); gap: 7px; align-items: center; }
+    .field label { display: block; margin-bottom: 3px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .field input {
+      width: 100%; height: 36px; padding: 0 5px; border: 1px solid transparent; border-radius: 8px;
+      background: var(--wash); color: var(--ink); text-align: center;
+      font-size: 22px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: .05em;
+    }
+    .field input::placeholder { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: 0; }
+    .field input.bad { border-color: var(--red); }
+    .shop-name { min-height: 15px; margin-top: 2px; color: var(--muted); font-size: 11px; font-weight: 650; white-space: nowrap; }
+    .shop-name.ok { color: var(--ink); }
+    .shop-name.bad { color: var(--red); }
+    .swap {
+      width: 38px; height: 36px; padding: 0; border: 1px solid #e9c1c9; border-radius: 10px;
+      background: var(--pink); color: var(--red); font-size: 22px; line-height: 1;
+    }
+    .swap:hover { background: #fbe3e8; }
+    .result { padding: 7px 9px 8px; border-color: #e7c8cc; }
+    .result-grid { display: grid; grid-template-columns: 86px minmax(0, 1fr); align-items: center; gap: 8px; }
+    .result-time {
+      display: grid; place-content: center; justify-self: center; position: relative; isolation: isolate;
+      width: 76px; height: 76px; border: 2px solid var(--red); border-radius: 50%;
+      background: var(--pink); color: var(--red); white-space: nowrap;
+    }
+    .result-time::before {
+      position: absolute; inset: 4px; z-index: -1; content: "";
+      border: 1px dashed currentColor; border-radius: 50%; opacity: .32;
+    }
+    .result h2 { font-size: 10px; font-weight: 750; }
+    .result-duration { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+    .result-number { font-size: 35px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.05em; }
+    .result-unit { font-size: 10px; font-weight: 750; }
+    .result-call { margin-top: 3px; font-size: 13px; font-weight: 800; }
+    .result.is-call .result-time { border-color: #b16c24; background: var(--amber-wash); color: var(--amber); }
+    .result.empty { border-style: dashed; border-color: var(--line); }
+    .result.empty .result-time { border-color: #d3c4bb; background: var(--wash); color: var(--muted); }
+    .result.empty .result-unit { display: none; }
+    .empty-message { color: var(--muted); font-size: 13px; font-weight: 650; white-space: nowrap; }
+    .result .route { font-size: 16px; line-height: 1.35; font-weight: 800; white-space: nowrap; }
+    .distance-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 6px; }
+    .distance-pair span {
+      display: flex; justify-content: center; align-items: baseline; gap: 4px;
+      min-width: 0; padding: 4px 1px; border-radius: 7px; background: var(--wash);
+      color: var(--muted); font-size: 11px; white-space: nowrap;
+    }
+    .distance-pair b { color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .distance-pair .call, .distance-pair .call b { color: var(--amber); background: var(--amber-wash); }
+    .add-row { margin-top: 5px; }
+    .add-row .button { width: 100%; }
+    .add-msg, .log-msg, .modal-err { color: var(--red); font-size: 11px; font-weight: 650; white-space: nowrap; }
+    .add-msg:not(:empty), .log-msg:not(:empty), .modal-err:not(:empty) { margin-top: 4px; }
+    .nearby { padding: 4px 6px 5px; background: #fffbf7; }
+    .nearby h2 { margin-bottom: 3px; font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .nearby-list { display: flex; justify-content: center; gap: 4px; }
+    .nearby-item {
+      display: flex; justify-content: center; align-items: center; gap: 4px;
+      flex: 0 1 142px; min-width: 0; min-height: 23px; padding: 2px 3px;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--paper);
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .nearby-item .distance { color: var(--red); font-size: 10px; }
+    .nearby-empty { display: grid; place-items: center; min-height: 23px; color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .log { padding: 7px 9px 6px; }
+    .log-title-row { display: flex; justify-content: center; align-items: baseline; gap: 8px; white-space: nowrap; }
+    .log h2 { font-size: 16px; font-weight: 800; }
+    .log-date { color: var(--muted); font-size: 10px; }
+    .log-sum {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 4px;
+      padding: 4px 0; border: 1px solid var(--line); border-radius: 8px; background: var(--wash);
+    }
+    .sum-box { padding-inline: 2px; white-space: nowrap; line-height: 1.15; }
+    .sum-box + .sum-box { border-left: 1px solid #e1d5cb; }
+    .sum-label { display: block; color: var(--muted); font-size: 10px; font-weight: 650; }
+    .sum-value { display: block; margin-top: 1px; font-size: 10px; font-weight: 650; }
+    .sum-value b { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .sum-box:nth-child(2) .sum-value { color: var(--red); }
+    .sum-call .sum-value { color: var(--amber); }
+    .log-list { position: relative; isolation: isolate; margin-top: 2px; }
+    .log-list::before {
+      position: absolute; z-index: -1; top: 18px; bottom: 18px; left: 37px;
+      border-left: 1px dashed #d3aab1; content: "";
+    }
+    .log-list:has(.log-empty)::before { display: none; }
+    .log-item {
+      display: grid; grid-template-columns: 43px minmax(0, 1fr) 64px; gap: 4px; align-items: center;
+      min-height: 39px; padding-block: 2px; border-bottom: 1px solid #f0e8e1;
+    }
+    .log-item time {
+      position: relative; padding-right: 10px; color: var(--muted);
+      font-size: 10px; font-weight: 750; font-variant-numeric: tabular-nums;
+    }
+    .log-item time::after {
+      position: absolute; top: 50%; left: 34px; transform: translateY(-50%);
+      width: 5px; height: 5px; border: 1px solid var(--red);
+      border-radius: 50%; background: var(--paper); content: "";
+    }
+    .log-item .route { font-size: 12px; font-weight: 750; line-height: 1.2; white-space: nowrap; }
+    .log-item .km { margin-top: 2px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .log-item .km span + span { margin-left: 6px; }
+    .log-row-action { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+    .mins {
+      min-width: 61px; padding: 2px 3px; border-radius: 999px; background: var(--pink);
+      color: var(--red); font-size: 10px; font-weight: 750; white-space: nowrap;
+    }
+    .mins.call { background: var(--amber-wash); color: var(--amber); }
+    .del { min-width: 48px; min-height: 17px; padding: 0 3px; border: 0; background: none; color: var(--muted); font-size: 10px; text-decoration: underline; }
+    .del:hover { color: var(--red); }
+    .log-empty { padding-block: 12px; color: var(--muted); font-size: 12px; }
+    .log-actions, .duty { display: grid; gap: 5px; margin-top: 5px; align-items: center; }
+    .log-actions { grid-template-columns: 1fr 1fr; }
+    #copy { color: var(--red); border-color: #ebc9d0; background: var(--pink); }
+    #copy:hover { background: #fbe3e8; }
+    .duty { grid-template-columns: repeat(3, 1fr); }
+    body[data-duty="guest"] .duty { grid-template-columns: 1fr 1fr; }
+    .duty .button { min-height: 27px; padding-inline: 4px; }
+    .duty-status, .guest-status { color: var(--muted); font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .duty-status::before {
+      display: inline-block; width: 6px; height: 6px; margin-right: 4px;
+      border-radius: 50%; background: #48734c; vertical-align: 1px; content: "";
+    }
+    .modal {
+      width: min(360px, calc(100% - 28px)); max-width: none; padding: 0;
+      border: 0; border-radius: 17px; background: var(--paper); color: var(--ink);
+      box-shadow: 0 18px 44px #23161136; text-align: center;
+    }
+    .modal::backdrop { background: #28191565; }
+    .modal-box { padding: 15px; }
+    .modal-box h3 { font-size: 20px; }
+    #modal-desc { margin: 4px 0 11px; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .modal-fields { display: grid; gap: 6px; }
+    .modal-fields input {
+      width: 100%; height: 40px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px;
+      background: var(--wash); text-align: center; font-size: 16px;
+    }
+    .modal-fields input::placeholder { color: var(--muted); font-size: 13px; }
+    .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 9px; }
+    .modal-actions .button { min-height: 38px; }
+    @media (min-width: 480px) {
+      .wrap { gap: 9px; padding-block: 18px 22px; }
+      .hero h1 { font-size: 30px; }
+      .preview-menu { top: 51px; }
+      .calculator, .result, .log { padding-inline: 14px; }
+      .result-grid { grid-template-columns: 114px minmax(0, 1fr); }
+      .result-time { width: 84px; height: 84px; }
+      .nearby-item { gap: 7px; font-size: 12px; }
+      .log-item { grid-template-columns: 43px minmax(0, 1fr) 84px; min-height: 42px; }
+      .log-item .route { font-size: 14px; }
+      .log-item .km { font-size: 11px; }
+    }
+    @media (max-width: 359px) {
+      .wrap { padding-inline: 8px; }
+      .preview-toggle { padding-inline: 6px; }
+      .nearby-item { gap: 2px; font-size: 10px; }
+      .result-grid { grid-template-columns: 73px minmax(0, 1fr); gap: 5px; }
+      .result-time { width: 69px; height: 69px; }
+      .result .route { font-size: 15px; }
+    }
+  </style>
+</head>
+<body data-duty="staff">
+  <main class="wrap">
+    <header class="hero">
+      <div class="brand"><i aria-hidden="true"></i><b>KFC</b><span>肯德基餐廳</span></div>
+      <h1>調撥工時查詢</h1>
+      <p>機車導航距離｜去回取較遠值</p>
+      <button class="preview-toggle" type="button" popovertarget="preview-menu">預覽<span aria-hidden="true">▾</span></button>
+    </header>
+
+    <section class="card calculator" aria-labelledby="calc-title">
+      <h2 id="calc-title" class="sr-only">輸入店號</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="from">起點店號</label>
+          <input id="from" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="如 098" aria-describedby="from-name">
+          <div id="from-name" class="shop-name" aria-live="polite">—</div>
+        </div>
+        <button class="swap" type="button" id="swap" aria-label="交換起點與終點">⇄</button>
+        <div class="field">
+          <label for="to">終點店號</label>
+          <input id="to" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="如 165" aria-describedby="to-name">
+          <div id="to-name" class="shop-name" aria-live="polite">—</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="result" class="card result" aria-labelledby="result-title" aria-live="polite">
+      <div class="result-grid">
+        <div class="result-time">
+          <h2 id="result-title">調撥工時</h2>
+          <p class="result-duration"><b class="result-number">—</b><span class="result-unit">分鐘</span></p>
+          <p class="result-call" hidden>致電中心</p>
+        </div>
+        <p class="empty-message" hidden>請輸入起點與終點店號</p>
+        <div class="result-trip">
+          <p class="route"></p>
+          <div class="distance-pair">
+            <span class="badge">本方向 <b id="out-km"></b></span>
+            <span class="reverse">反向 <b id="back-km"></b></span>
+          </div>
+        </div>
+      </div>
+      <div class="add-row">
+        <button class="button" type="button" id="add"><span aria-hidden="true">＋</span>加入今日紀錄</button>
+        <div class="add-msg" id="add-msg"></div>
+      </div>
+    </section>
+
+    <section class="card nearby" aria-labelledby="nearby-5-title">
+      <h2 id="nearby-5-title">1-5KM（30分鐘）</h2>
+      <ul id="nearby-5" class="nearby-list" aria-live="polite"></ul>
+    </section>
+    <section class="card nearby" aria-labelledby="nearby-9-title">
+      <h2 id="nearby-9-title">5-9KM（60分鐘）</h2>
+      <ul id="nearby-9" class="nearby-list" aria-live="polite"></ul>
+    </section>
+
+    <section class="card log" aria-labelledby="log-title">
+      <div class="log-title-row">
+        <h2 id="log-title">今日調撥紀錄</h2>
+        <time class="log-date" id="log-date" datetime="2026-11-23">2026/11/23・台北時間</time>
+      </div>
+      <div class="log-sum">
+        <div class="sum-box"><span class="sum-label">筆數</span><span class="sum-value"><b id="sum-count">—</b> 筆</span></div>
+        <div class="sum-box"><span class="sum-label">合計工時</span><span class="sum-value"><b id="sum-mins">—</b> 分鐘</span></div>
+        <div class="sum-box sum-call" role="group"><span class="sum-label">致電中心</span><span class="sum-value" id="sum-call"></span></div>
+      </div>
+      <ol id="log-list" class="log-list"></ol>
+      <div class="log-actions">
+        <button class="button ghost small" type="button" id="copy">複製今日匯總</button>
+        <button class="button ghost small" type="button" id="reload">重新整理</button>
+      </div>
+      <div id="log-msg" class="log-msg" role="status"></div>
+      <div class="duty" id="duty">
+        <span class="duty-status">值班已登入</span>
+        <button class="button ghost small" type="button" id="change" aria-haspopup="dialog">更改密碼</button>
+        <button class="button ghost small" type="button" id="logout">登出</button>
+        <span class="guest-status" hidden>值班未登入</span>
+        <button class="button small" type="button" id="login" aria-haspopup="dialog" hidden>值班登入</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="preview-menu" id="preview-menu" popover>
+    <p>查詢狀態預覽・示意資料</p>
+    <div class="preview-options">
+      <button type="button" data-sample="empty" aria-pressed="false">未查詢</button>
+      <button type="button" data-sample="30" aria-pressed="false">30 分鐘</button>
+      <button type="button" data-sample="60" aria-pressed="false">60 分鐘</button>
+      <button type="button" data-sample="90" aria-pressed="false">90 分鐘</button>
+      <button type="button" data-sample="120" aria-pressed="false">120 分鐘</button>
+      <button type="button" data-sample="call" aria-pressed="false">致電中心</button>
+    </div>
+  </div>
+
+  <dialog id="modal" class="modal" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <form class="card modal-box" method="dialog" autocomplete="off">
+      <h3 id="modal-title">值班登入</h3>
+      <p id="modal-desc">示意視窗，按登入即可預覽</p>
+      <div class="modal-fields">
+        <input type="password" id="pw" placeholder="值班密碼" aria-label="值班密碼" readonly>
+        <input type="password" id="pw-new" placeholder="新密碼（至少 4 個字）" aria-label="新密碼（至少 4 個字）" readonly hidden>
+        <input type="password" id="pw-new2" placeholder="再輸入一次新密碼" aria-label="再輸入一次新密碼" readonly hidden>
+      </div>
+      <div id="pw-err" class="modal-err" aria-live="polite"></div>
+      <div class="modal-actions">
+        <button class="button ghost" type="submit" id="pw-cancel" value="cancel" autofocus>取消</button>
+        <button class="button" type="submit" id="pw-ok" value="confirm">登入</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    // 設計稿沿用 A／B 的示意路線與紀錄，操作只更新目前頁面。
+    const origin = { code: "098", name: "桃園藝文" };
+    const samples = {
+      30: { code: "165", name: "桃園中正", out: 3.8, back: 4.2 },
+      60: { code: "214", name: "南崁中正", out: 6.8, back: 7.2 },
+      90: { code: "209", name: "龜山長庚", out: 10.6, back: 11.2 },
+      120: { code: "226", name: "中壢環北", out: 14.6, back: 15.3 },
+      call: { code: "188", name: "中壢中央", out: 16.8, back: 18.4 },
+    };
+    const shops = [origin, ...Object.values(samples)];
+    const nearbyNames = {
+      30: ["桃園南平", "桃園中正", "桃園大業"],
+      60: ["南崁中正", "龜山大同", "桃園龍安"],
+    };
+    const $ = (id) => document.getElementById(id);
+    const result = $("result");
+    const previewMenu = $("preview-menu");
+    const modal = $("modal");
+    let current = null;
+    let isDuty = true;
+    let pendingTrip = null;
+    let modalMode = "";
+    let nextId = 4;
+
+    function ruleFor(km) {
+      if (km <= 5) return 30;
+      if (km <= 9) return 60;
+      if (km <= 13) return 90;
+      if (km <= 17) return 120;
+      return null;
+    }
+
+    function trip(from, to) {
+      if (from !== origin && to !== origin) return null;
+      const forward = from === origin;
+      const sample = forward ? to : from;
+      const out = forward ? sample.out : sample.back;
+      const back = forward ? sample.back : sample.out;
+      return { from, to, out, back, minutes: ruleFor(Math.max(out, back)) };
+    }
+
+    const logs = [
+      { id: 1, time: "15:42", ...trip(origin, samples[30]) },
+      { id: 2, time: "13:18", ...trip(origin, samples.call) },
+      { id: 3, time: "11:06", ...trip(origin, samples[90]) },
+    ];
+    const routeText = ({ from, to }) => from.name + " → " + to.name;
+    const minutesText = ({ minutes }) => minutes === null ? "致電中心" : minutes + " 分鐘";
+    const kmText = (km) => km.toFixed(1) + " km";
+
+    function showName(field) {
+      const input = $(field);
+      const caption = $(field + "-name");
+      const raw = input.value.trim().toUpperCase();
+      const code = /^(?:TWI)?(\d{1,3})$/.exec(raw)?.[1].padStart(3, "0");
+      const shop = shops.find((entry) => entry.code === code);
+      const invalid = Boolean(raw && !shop);
+      input.classList.toggle("bad", invalid);
+      input.setAttribute("aria-invalid", String(invalid));
+      caption.classList.toggle("bad", invalid);
+      caption.classList.toggle("ok", Boolean(shop));
+      caption.textContent = shop?.name ?? (invalid ? "查無此店號" : "—");
+      return shop;
+    }
+
+    function renderNearby(from, minutes, list) {
+      let names = [];
+      if (from === origin) names = nearbyNames[minutes];
+      else if (from && trip(from, origin).minutes === minutes) names = [origin.name];
+      list.innerHTML = names.length
+        ? names.map((name) => `<li class="nearby-item"><span class="name">${name}</span><span class="distance">${minutes} 分鐘</span></li>`).join("")
+        : `<li class="nearby-empty">${from ? "此區間無示意餐廳" : "尚未輸入有效的起點店號"}</li>`;
+    }
+
+    function update() {
+      const from = showName("from");
+      const to = showName("to");
+      renderNearby(from, 30, $("nearby-5"));
+      renderNearby(from, 60, $("nearby-9"));
+      current = from && to && from !== to ? trip(from, to) : null;
+      const needsCall = current?.minutes === null;
+      result.classList.toggle("empty", !current);
+      result.classList.toggle("is-call", needsCall);
+      const emptyMessage = result.querySelector(".empty-message");
+      emptyMessage.hidden = Boolean(current);
+      result.querySelector(".result-trip").hidden = !current;
+      result.querySelector(".add-row").hidden = !current;
+      result.querySelector(".result-duration").hidden = needsCall;
+      result.querySelector(".result-call").hidden = !needsCall;
+      result.querySelector(".result-number").textContent = current?.minutes ?? "—";
+      $("add-msg").textContent = "";
+      if (current) {
+        result.querySelector(".route").textContent = routeText(current);
+        $("out-km").textContent = kmText(current.out);
+        $("back-km").textContent = kmText(current.back);
+        result.querySelector(".badge").classList.toggle("call", current.out > 17);
+        result.querySelector(".reverse").classList.toggle("call", current.back > 17);
+      } else if (from && to) {
+        emptyMessage.textContent = from === to ? "起點與終點不能是同一間餐廳" : "暫無這條路線的示意資料";
+      } else {
+        emptyMessage.textContent = "請輸入起點與終點店號";
+      }
+
+      const emptyFields = !$("from").value && !$("to").value;
+      const previewKey = emptyFields ? "empty" : from === origin && current ? String(current.minutes ?? "call") : "";
+      for (const button of previewMenu.querySelectorAll("[data-sample]")) {
+        button.setAttribute("aria-pressed", String(button.dataset.sample === previewKey));
+      }
+    }
+
+    function showSample(key) {
+      const sample = samples[key];
+      $("from").value = sample ? origin.code : "";
+      $("to").value = sample?.code ?? "";
+      update();
+    }
+
+    function logTotals() {
+      return {
+        minutes: logs.reduce((total, log) => total + (log.minutes ?? 0), 0),
+        calls: logs.filter((log) => log.minutes === null).length,
+      };
+    }
+
+    function renderLogs() {
+      const { minutes, calls } = logTotals();
+      $("sum-count").textContent = logs.length;
+      $("sum-mins").textContent = minutes;
+      $("sum-call").innerHTML = `另 <b>${calls}</b> 筆`;
+      $("sum-call").parentElement.setAttribute("aria-label", `另 ${calls} 筆致電中心`);
+      $("log-list").innerHTML = logs.length ? logs.map((log) => `
+        <li class="log-item">
+          <time datetime="${log.time}">${log.time}</time>
+          <div>
+            <p class="route">${routeText(log)}</p>
+            <p class="km"><span>${log.from.code} → ${log.to.code}</span><span>${log.out.toFixed(1)} / ${kmText(log.back)}</span></p>
+          </div>
+          <div class="log-row-action">
+            <span class="mins${log.minutes === null ? " call" : ""}">${minutesText(log)}</span>
+            ${isDuty ? `<button class="del" type="button" data-id="${log.id}" aria-label="刪除 ${log.time} 的紀錄">刪除</button>` : ""}
+          </div>
+        </li>`).join("") : '<li class="log-empty">今天還沒有調撥紀錄</li>';
+    }
+
+    function setDuty(staff) {
+      isDuty = staff;
+      document.body.dataset.duty = staff ? "staff" : "guest";
+      for (const element of document.querySelectorAll(".duty-status, #change, #logout")) element.hidden = !staff;
+      for (const element of document.querySelectorAll(".guest-status, #login")) element.hidden = staff;
+      renderLogs();
+    }
+
+    function openPassword(mode, actionTrip = null) {
+      modalMode = mode;
+      pendingTrip = actionTrip;
+      modal.returnValue = "";
+      const change = mode === "change";
+      $("modal-title").textContent = change ? "更改值班密碼" : "值班登入";
+      $("modal-desc").textContent = change ? "示意視窗，按確認即可預覽" : "示意視窗，按登入即可預覽";
+      $("pw").placeholder = change ? "目前的密碼" : "值班密碼";
+      $("pw").setAttribute("aria-label", $("pw").placeholder);
+      $("pw-new").hidden = !change;
+      $("pw-new2").hidden = !change;
+      $("pw-ok").textContent = change ? "確認更改" : "登入";
+      modal.showModal();
+    }
+
+    function addTrip(item) {
+      const time = new Intl.DateTimeFormat("zh-TW", {
+        timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      }).format(new Date());
+      logs.unshift({ id: nextId++, time, ...item });
+      logs.sort((first, second) => second.time.localeCompare(first.time));
+      renderLogs();
+      $("log-msg").textContent = "";
+      $("add-msg").textContent = "已加入今日紀錄";
+    }
+
+    async function copySummary() {
+      const message = $("log-msg");
+      if (!logs.length) {
+        message.textContent = "今天還沒有紀錄可以複製";
+        return;
+      }
+      const { minutes, calls } = logTotals();
+      const head = `11/23 調撥匯總（共 ${logs.length} 筆，合計 ${minutes} 分鐘${calls ? `，另 ${calls} 筆致電中心` : ""}）`;
+      const summary = [head, ...logs.map((log, index) => `${index + 1}. ${log.time} ${routeText(log)}｜${minutesText(log)}`)].join("\n");
+      try {
+        await navigator.clipboard.writeText(summary);
+        message.textContent = "已複製，可以貼到 LINE";
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = summary;
+        textarea.setAttribute("readonly", "");
+        textarea.className = "sr-only";
+        document.body.append(textarea);
+        textarea.select();
+        const copied = document.execCommand("copy");
+        textarea.remove();
+        $("copy").focus();
+        message.textContent = copied ? "已複製，可以貼到 LINE" : "瀏覽器未允許複製";
+      }
+    }
+
+    $("from").addEventListener("input", update);
+    $("to").addEventListener("input", update);
+    $("swap").addEventListener("click", () => {
+      [$("from").value, $("to").value] = [$("to").value, $("from").value];
+      update();
+    });
+    previewMenu.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-sample]");
+      if (!button) return;
+      showSample(button.dataset.sample);
+      previewMenu.hidePopover();
+    });
+    $("add").addEventListener("click", () => {
+      if (!current) return;
+      if (isDuty) addTrip(current);
+      else openPassword("login", current);
+    });
+    $("log-list").addEventListener("click", (event) => {
+      const button = event.target.closest(".del");
+      if (!isDuty || !button) return;
+      const index = logs.findIndex((log) => log.id === Number(button.dataset.id));
+      if (index < 0) return;
+      const log = logs[index];
+      if (!window.confirm(`確定刪除這筆示意紀錄？\n${log.time}　${routeText(log)}`)) return;
+      logs.splice(index, 1);
+      renderLogs();
+      ($("log-list").querySelector(".del") ?? $("copy")).focus();
+      $("log-msg").textContent = "已刪除紀錄";
+    });
+    $("copy").addEventListener("click", copySummary);
+    $("reload").addEventListener("click", () => {
+      renderLogs();
+      $("log-msg").textContent = "已重新整理";
+    });
+    $("login").addEventListener("click", () => openPassword("login"));
+    $("change").addEventListener("click", () => openPassword("change"));
+    $("logout").addEventListener("click", () => {
+      $("add-msg").textContent = "";
+      $("log-msg").textContent = "";
+      setDuty(false);
+      $("login").focus();
+    });
+    modal.addEventListener("close", () => {
+      if (modal.returnValue === "confirm") {
+        if (modalMode === "login") {
+          setDuty(true);
+          if (pendingTrip) addTrip(pendingTrip);
+          else $("change").focus();
+        } else {
+          $("log-msg").textContent = "已預覽更改密碼流程";
+        }
+      }
+      pendingTrip = null;
+    });
+
+    showSample("30");
+    setDuty(true);
+  </script>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>肯德基餐廳調撥工時查詢｜B 設計稿</title>
+  <style>
+:root {
+  color-scheme: light;
+  --max-width: 520px;
+  --red: #c8102e;
+  --ink: #1e222b;
+  --muted: #525a67;
+  --line: #dde2e8;
+  --paper: #fff;
+  --wash: #f1f3f6;
+  --shadow: 0 2px 4px #24293808, 0 8px 22px #2429380b;
+  font: 14px/1.36 -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  font-synthesis: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; min-width: 0; background: var(--wash); }
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+h1, h2, h3, label, button, p, .brand, .route, .km, .shop-name, .nearby-item,
+.distance-pair, .sum-box, .duty-status, #sum-call { white-space: nowrap; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button, input { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible { outline: 2px solid #0070ac; outline-offset: 2px; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.wrap {
+  width: min(100%, var(--max-width));
+  margin-inline: auto;
+  padding: 12px 12px 24px;
+  display: grid;
+  gap: 10px;
+}
+.hero {
+  position: relative;
+  text-align: center;
+  padding: 1px 0 3px;
+}
+.brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  font-size: 11px;
+  font-weight: 750;
+}
+.brand b {
+  font: italic 900 17px/1 Arial, sans-serif;
+  letter-spacing: -.085em;
+}
+.brand i {
+  width: 13px;
+  height: 10px;
+  background: linear-gradient(90deg, currentColor 0 3px, transparent 3px 5px,
+    currentColor 5px 8px, transparent 8px 10px, currentColor 10px);
+}
+.hero h1 { font-size: clamp(25px, 7.2vw, 31px); line-height: 1.2; font-weight: 850; }
+.hero p { margin-top: 4px; font-size: 11px; color: var(--muted); }
+.preview-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-height: 29px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--muted);
+  background: var(--paper);
+  font-size: 11px;
+  font-weight: 730;
+}
+.preview-toggle span { margin-left: 2px; }
+.preview-menu {
+  position: fixed;
+  inset: 46px max(12px, calc((100% - var(--max-width)) / 2 + 12px)) auto auto;
+  margin: 0;
+  width: min(301px, calc(100% - 24px));
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 12px 36px #1619223b;
+  text-align: center;
+}
+.preview-menu > p { margin-bottom: 9px; font-size: 12px; font-weight: 730; }
+.preview-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.preview-options button {
+  min-height: 35px;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 720;
+}
+.preview-options button[aria-pressed="true"] { border-color: var(--red); color: var(--red); background: #fff0f2; }
+.card { min-width: 0; background: var(--paper); border-radius: 18px; box-shadow: var(--shadow); text-align: center; }
+
+.calculator { padding: 10px 12px; }
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+.field { display: grid; gap: 3px; min-width: 0; }
+.field label { color: var(--muted); font-weight: 750; font-size: 12px; }
+.field input {
+  width: 100%;
+  height: 38px;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--wash);
+  color: var(--ink);
+  text-align: center;
+  font-size: 21px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .045em;
+}
+.field input::placeholder { color: #646a74; font-size: 13px; font-weight: 600; letter-spacing: 0; }
+.shop-name { font-size: 12px; font-weight: 740; }
+.swap {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fbe6eb;
+  color: var(--red);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.result { position: relative; isolation: isolate; padding: 10px 12px 11px; }
+.result-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 108px) minmax(0, 1fr);
+  grid-template-areas: "minutes trip";
+  align-items: center;
+  gap: 9px;
+}
+.result h2 { font-size: 11px; font-weight: 750; }
+.result-time { grid-area: minutes; }
+.result-number {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-weight: 860;
+  font-size: 42px;
+  line-height: .98;
+  letter-spacing: -.065em;
+}
+.result-unit { margin-left: 3px; font-size: 12px; font-weight: 750; }
+.result-call { display: block; margin: 5px 0 2px; font-size: 20px; font-weight: 850; line-height: 1.3; white-space: nowrap; }
+.result-trip { grid-area: trip; min-width: 0; }
+.route { font-weight: 790; }
+.result-trip .route { font-size: clamp(13px, 3.9vw, 17px); }
+.distance-pair { display: flex; justify-content: center; gap: 6px; margin-top: 5px; font-size: 11px; }
+.distance-pair span { display: grid; min-width: 0; padding: 4px 5px; border-radius: 7px; }
+.distance-pair b { font-size: 12px; font-weight: 780; font-variant-numeric: tabular-nums; }
+.add-row { margin-top: 8px; }
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 750;
+  line-height: 1.15;
+}
+.button.ghost { background: var(--paper); border-color: var(--line); color: var(--ink); }
+.button.small { font-size: 12px; }
+.add-row .button { width: 100%; }
+.empty-message { font-size: 12px; font-weight: 750; }
+.result.empty { padding-block: 9px; }
+
+.nearby { min-width: 0; text-align: center; }
+.nearby h2 { margin-bottom: 5px; font-size: 13px; font-weight: 800; }
+.nearby-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.nearby-item {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  min-width: 0;
+  min-height: 41px;
+  font-size: clamp(11px, 3.35vw, 13px);
+}
+.nearby-item .name { font-weight: 760; }
+.nearby-item .distance { font-size: 11px; font-weight: 750; }
+.nearby-empty { grid-column: 1 / -1; padding: 5px; color: var(--muted); font-size: 12px; }
+
+.log { padding: 0 10px 10px; }
+.log-heading { margin-inline: -10px; padding: 10px 10px 8px; border-radius: 18px 18px 0 0; }
+.log-title-row { display: grid; justify-items: center; gap: 1px; margin-bottom: 7px; }
+.log h2 { font-size: 18px; font-weight: 850; }
+.log-date { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.log-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.sum-box { display: grid; align-content: center; min-height: 51px; padding: 3px 2px; border-radius: 10px; }
+.sum-label { font-size: 11px; font-weight: 750; }
+.sum-value { font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 740; }
+.sum-value b { font-size: 24px; line-height: 1; letter-spacing: -.05em; font-weight: 860; }
+.sum-call { font-size: 11px; font-weight: 740; }
+.log-list { display: grid; }
+.log-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 67px 38px;
+  align-items: center;
+  gap: 5px;
+  min-height: 48px;
+  padding: 4px 5px;
+}
+.log-item .route { font-size: clamp(12px, 3.5vw, 14px); }
+.log-item .km {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: clamp(9px, 2.85vw, 12px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 620;
+}
+.km > span + span { margin-left: 4px; padding-left: 4px; border-left: 1px solid var(--line); }
+.mins {
+  display: grid;
+  align-content: center;
+  min-height: 29px;
+  border-radius: 7px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+}
+.del {
+  height: 32px;
+  padding: 0 2px;
+  border: 1px solid #edd1d7;
+  border-radius: 8px;
+  background: var(--paper);
+  color: #ac1832;
+  font-size: 11px;
+  font-weight: 750;
+}
+.log-actions, .duty, .modal-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.log-actions { margin-top: 7px; }
+.duty {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
+}
+.duty-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 34px;
+  border-radius: 8px;
+  background: #e9f5ee;
+  color: #216342;
+  font-size: 11px;
+  font-weight: 760;
+}
+.duty-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.duty .button { min-height: 34px; }
+.duty .guest-status { padding-inline: 1px; color: var(--muted); font-size: 11px; font-weight: 750; }
+body[data-duty="guest"] .duty { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body[data-duty="guest"] .log-item { grid-template-columns: minmax(0, 1fr) 67px; }
+
+.modal {
+  width: min(360px, calc(100% - 32px));
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 18px 50px #100a1647;
+}
+.modal::backdrop { background: #191520a3; }
+.modal-box { padding: 16px; box-shadow: none; }
+.modal-box h3 { font-size: 19px; font-weight: 850; }
+.modal-box p { margin: 4px 0 12px; color: var(--muted); font-size: 12px; }
+.modal-fields { display: grid; gap: 6px; }
+.modal-fields input {
+  width: 100%;
+  min-height: 41px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--wash);
+  color: var(--ink);
+  text-align: center;
+  font-size: 16px;
+}
+.modal-fields input::placeholder { font-size: 13px; color: var(--muted); }
+.modal-actions { margin-top: 12px; }
+
+/* B｜紅色頁首底帶，白色結果卡，今日匯總採深色底。 */
+:root {
+  --line: #e5deda;
+  --wash: #f4f0eb;
+  --ink: #241d1e;
+  --muted: #62585b;
+  --shadow: 0 2px 5px #2f13200a, 0 8px 20px #3d232015;
+}
+body { position: relative; isolation: isolate; }
+body::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: 151px;
+  background:
+    linear-gradient(135deg, transparent 72%, #f8455e2e 72% 75%, transparent 75% 78%, #f8455e2e 78% 81%, transparent 81%),
+    linear-gradient(130deg, #a80b26, #cb0e30 66%, #b7082a);
+}
+.hero { color: #fff; }
+.brand, .hero p { color: #ffeef1; }
+.hero h1 { letter-spacing: .035em; }
+.preview-toggle { border-color: #ffb6c480; background: #87051e47; color: #fff; }
+
+.calculator { border: 1px solid #fff; }
+.field input { border-color: #eadedc; background: #f8f3ef; }
+.shop-name { color: #4c383b; }
+.swap { border-radius: 10px; background: #272124; color: #fff; }
+
+.result { border: 1px solid #e7ded8; }
+.result-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 114px);
+  grid-template-areas: "trip minutes";
+}
+.result-time {
+  min-height: 67px;
+  display: grid;
+  align-content: center;
+  padding: 4px 2px 5px;
+  border-radius: 13px;
+  background: #fce4e9;
+  color: #9b0e2c;
+}
+.result-time:has(.result-call:not([hidden])) { background: #ffedcf; color: #743800; }
+.result-number { font-size: 40px; }
+.distance-pair span { background: #f5efeb; color: #5a4649; }
+.distance-pair .call { background: #ffedcf; color: #743800; }
+.result.empty { color: #6d1d30; }
+
+.nearby { padding: 5px 7px 6px; border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
+.nearby h2 { margin-bottom: 3px; color: #543b40; }
+.nearby-list { gap: 0; }
+.nearby-item { min-height: 37px; }
+.nearby-item + .nearby-item { border-left: 1px solid #efe8e2; }
+.nearby-item .distance { padding: 0 7px; border-radius: 99px; background: #fae6ea; color: #96102b; }
+.nearby:nth-of-type(4) .distance { background: #eee9e3; color: #5c4546; }
+
+.log { border: 1px solid #e7ded8; }
+.log-heading { background: #261e21; color: #fff; }
+.log-date { color: #e4d3d7; }
+.log-sum { gap: 0; }
+.sum-box { min-height: 45px; border-radius: 0; }
+.sum-box + .sum-box { border-left: 1px solid #ffffff38; }
+.sum-box:nth-child(2) .sum-value { color: #ff9fb3; }
+.sum-box:nth-child(3) { color: #ffcc88; }
+.log-list { padding-top: 2px; }
+.log-item { border-bottom: 1px solid #eee7e1; }
+.mins { min-height: 33px; background: #f8e4e8; color: #970f2b; }
+.mins.call { background: #ffebca; color: #733902; }
+.log-actions #copy { border-color: var(--red); color: #fff; background: var(--red); }
+
+.modal-box { border-top: 5px solid var(--red); }
+
+@media (max-width: 420px) {
+  .wrap { gap: 8px; padding-block: 10px 12px; }
+  .brand { min-height: 20px; }
+  .hero { padding: 0 0 2px; }
+  .hero p { margin-top: 3px; }
+  .calculator { padding-block: 7px; }
+  .field { gap: 2px; }
+  .field input { height: 36px; }
+  .result { padding-block: 8px; }
+  .result-number { font-size: 38px; }
+  .distance-pair { margin-top: 3px; }
+  .distance-pair span { padding-block: 3px; }
+  .add-row { margin-top: 7px; }
+  .nearby-item { min-height: 36px; }
+  .log-heading { padding-block: 8px 7px; }
+  .log-title-row { margin-bottom: 5px; }
+  .log h2 { font-size: 17px; }
+  .sum-box { min-height: 44px; }
+  .log-item { min-height: 45px; }
+}
+@media (max-width: 420px) { body::before { height: 139px; } }
+  </style>
+</head>
+<body data-duty="staff">
+  <main class="wrap">
+    <header class="hero">
+      <div class="brand"><i aria-hidden="true"></i><b>KFC</b><span>肯德基餐廳</span></div>
+      <h1>調撥工時查詢</h1>
+      <p>機車導航距離｜去回取較遠值</p>
+      <button class="preview-toggle" type="button" popovertarget="preview-menu">預覽<span aria-hidden="true">⌄</span></button>
+    </header>
+
+    <section class="card calculator" aria-labelledby="calc-title">
+      <h2 id="calc-title" class="sr-only">輸入店號</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="from">起點店號</label>
+          <input id="from" inputmode="numeric" placeholder="如 098" value="098" aria-describedby="from-name" readonly>
+          <div id="from-name" class="shop-name ok">桃園藝文</div>
+        </div>
+        <button class="swap" type="button" id="swap" aria-label="交換起點與終點">⇄</button>
+        <div class="field">
+          <label for="to">終點店號</label>
+          <input id="to" inputmode="numeric" placeholder="如 165" value="165" aria-describedby="to-name" readonly>
+          <div id="to-name" class="shop-name ok">桃園中正</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="result" class="card result" aria-label="查詢結果" aria-live="polite">
+      <p class="empty-message" hidden>輸入起點與終點店號即可查詢</p>
+      <div class="result-grid">
+        <div class="result-time">
+          <h2>調撥工時</h2>
+          <p class="result-duration"><b class="result-number">30</b><span class="result-unit">分鐘</span></p>
+          <p class="result-call" hidden>致電中心</p>
+        </div>
+        <div class="result-trip">
+          <p class="route">桃園藝文 → 桃園中正</p>
+          <div class="distance-pair">
+            <span class="badge">本方向 <b id="out-km">3.8 km</b></span>
+            <span class="reverse">反向 <b id="back-km">4.2 km</b></span>
+          </div>
+        </div>
+      </div>
+      <div class="add-row">
+        <button class="button" type="button" id="add"><span aria-hidden="true">＋</span>加入今日紀錄</button>
+      </div>
+    </section>
+
+    <section class="nearby" aria-labelledby="nearby-5-title">
+      <h2 id="nearby-5-title">1-5KM（30分鐘）</h2>
+      <ul id="nearby-5" class="nearby-list">
+        <li class="nearby-item"><span class="name">桃園南平</span><span class="distance">30 分鐘</span></li>
+        <li class="nearby-item"><span class="name">桃園中正</span><span class="distance">30 分鐘</span></li>
+        <li class="nearby-item"><span class="name">桃園大業</span><span class="distance">30 分鐘</span></li>
+        <li class="nearby-empty" hidden>尚未輸入起點店號</li>
+      </ul>
+    </section>
+
+    <section class="nearby" aria-labelledby="nearby-9-title">
+      <h2 id="nearby-9-title">5-9KM（60分鐘）</h2>
+      <ul id="nearby-9" class="nearby-list">
+        <li class="nearby-item"><span class="name">南崁中正</span><span class="distance">60 分鐘</span></li>
+        <li class="nearby-item"><span class="name">龜山大同</span><span class="distance">60 分鐘</span></li>
+        <li class="nearby-item"><span class="name">桃園龍安</span><span class="distance">60 分鐘</span></li>
+        <li class="nearby-empty" hidden>尚未輸入起點店號</li>
+      </ul>
+    </section>
+
+    <section class="card log" aria-labelledby="log-title">
+      <div class="log-heading">
+        <div class="log-title-row">
+          <h2 id="log-title">今日調撥紀錄</h2>
+          <time class="log-date" id="log-date" datetime="2026-11-23">2026/11/23・台北時間</time>
+        </div>
+        <div class="log-sum">
+          <div class="sum-box">
+            <span class="sum-label">筆數</span>
+            <span class="sum-value"><b id="sum-count">3</b> 筆</span>
+          </div>
+          <div class="sum-box">
+            <span class="sum-label">合計工時</span>
+            <span class="sum-value"><b id="sum-mins">120</b> 分鐘</span>
+          </div>
+          <div class="sum-box sum-call" id="sum-call" role="group" aria-label="另 1 筆致電中心">
+            <span class="sum-label">致電中心</span>
+            <span class="sum-value">另 <b>1</b> 筆</span>
+          </div>
+        </div>
+      </div>
+
+      <ul id="log-list" class="log-list">
+        <li class="log-item">
+          <div>
+            <p class="route">桃園藝文 → 桃園中正</p>
+            <p class="km"><span><time datetime="15:42">15:42</time></span><span>098 → 165</span><span>3.8 / 4.2 km</span></p>
+          </div>
+          <span class="mins">30 分鐘</span>
+          <button type="button" class="del" aria-label="刪除 15:42 的紀錄">刪除</button>
+        </li>
+        <li class="log-item">
+          <div>
+            <p class="route">桃園藝文 → 中壢中央</p>
+            <p class="km"><span><time datetime="13:18">13:18</time></span><span>098 → 188</span><span>16.8 / 18.4 km</span></p>
+          </div>
+          <span class="mins call">致電中心</span>
+          <button type="button" class="del" aria-label="刪除 13:18 的紀錄">刪除</button>
+        </li>
+        <li class="log-item">
+          <div>
+            <p class="route">桃園藝文 → 龜山長庚</p>
+            <p class="km"><span><time datetime="11:06">11:06</time></span><span>098 → 209</span><span>10.6 / 11.2 km</span></p>
+          </div>
+          <span class="mins">90 分鐘</span>
+          <button type="button" class="del" aria-label="刪除 11:06 的紀錄">刪除</button>
+        </li>
+      </ul>
+
+      <div class="log-actions">
+        <button class="button ghost small" type="button" id="copy">複製今日匯總</button>
+        <button class="button ghost small" type="button" id="reload">重新整理</button>
+      </div>
+      <div class="duty" id="duty">
+        <span class="duty-status">值班已登入</span>
+        <button class="button ghost small" type="button" id="change" aria-haspopup="dialog">更改密碼</button>
+        <button class="button ghost small" type="button" id="logout">登出</button>
+        <span class="guest-status" hidden>值班未登入</span>
+        <button class="button small" type="button" id="login" aria-haspopup="dialog" hidden>值班登入</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="preview-menu" id="preview-menu" popover>
+    <p>查詢狀態預覽・示意資料</p>
+    <div class="preview-options">
+      <button type="button" data-sample="empty" aria-pressed="false">未查詢</button>
+      <button type="button" data-sample="30" aria-pressed="true">30 分鐘</button>
+      <button type="button" data-sample="60" aria-pressed="false">60 分鐘</button>
+      <button type="button" data-sample="90" aria-pressed="false">90 分鐘</button>
+      <button type="button" data-sample="120" aria-pressed="false">120 分鐘</button>
+      <button type="button" data-sample="call" aria-pressed="false">致電中心</button>
+    </div>
+  </div>
+
+  <dialog class="modal" id="modal" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <form class="card modal-box" method="dialog" autocomplete="off">
+      <h3 id="modal-title">值班登入</h3>
+      <p id="modal-desc">新增與刪除紀錄需值班登入</p>
+      <div class="modal-fields">
+        <input type="password" id="pw" autocomplete="off" placeholder="值班密碼" aria-label="值班密碼" readonly>
+        <input type="password" id="pw-new" autocomplete="off" placeholder="新密碼（至少 4 個字）" aria-label="新密碼（至少 4 個字）" readonly hidden>
+        <input type="password" id="pw-new2" autocomplete="off" placeholder="再輸入一次新密碼" aria-label="再輸入一次新密碼" readonly hidden>
+      </div>
+      <div class="modal-actions">
+        <button class="button ghost" type="submit" id="pw-cancel" value="cancel" autofocus>取消</button>
+        <button class="button" type="submit" id="pw-ok" value="confirm">登入</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    // 僅切換設計稿的畫面。所有店號、距離及紀錄皆為示意。
+    const samples = {
+      30: { code: "165", name: "桃園中正", out: 3.8, back: 4.2 },
+      60: { code: "214", name: "南崁中正", out: 6.8, back: 7.2 },
+      90: { code: "209", name: "龜山長庚", out: 10.6, back: 11.2 },
+      120: { code: "226", name: "中壢環北", out: 14.6, back: 15.3 },
+      call: { code: "188", name: "中壢中央", out: 16.8, back: 18.4 },
+    };
+    const $ = (id) => document.getElementById(id);
+    const previewMenu = $("preview-menu");
+    const result = $("result");
+
+    function showSample(key) {
+      const sample = samples[key];
+      const empty = !sample;
+      const needsCall = key === "call";
+      $("from").value = empty ? "" : "098";
+      $("to").value = sample?.code ?? "";
+      $("from-name").textContent = empty ? "—" : "桃園藝文";
+      $("to-name").textContent = sample?.name ?? "—";
+
+      result.classList.toggle("empty", empty);
+      result.querySelector(".empty-message").hidden = !empty;
+      result.querySelector(".result-grid").hidden = empty;
+      result.querySelector(".add-row").hidden = empty;
+      if (sample) {
+        result.querySelector(".result-duration").hidden = needsCall;
+        result.querySelector(".result-call").hidden = !needsCall;
+        result.querySelector(".result-number").textContent = needsCall ? "" : key;
+        result.querySelector(".route").textContent = "桃園藝文 → " + sample.name;
+        $("out-km").textContent = sample.out.toFixed(1) + " km";
+        $("back-km").textContent = sample.back.toFixed(1) + " km";
+        result.querySelector(".badge").classList.toggle("call", sample.out > 17);
+        result.querySelector(".reverse").classList.toggle("call", sample.back > 17);
+      }
+
+      for (const item of document.querySelectorAll(".nearby-item")) item.hidden = empty;
+      for (const item of document.querySelectorAll(".nearby-empty")) item.hidden = !empty;
+    }
+
+    for (const option of previewMenu.querySelectorAll("[data-sample]")) {
+      option.addEventListener("click", () => {
+        showSample(option.dataset.sample);
+        for (const button of previewMenu.querySelectorAll("[data-sample]")) {
+          button.setAttribute("aria-pressed", String(button === option));
+        }
+        previewMenu.hidePopover();
+      });
+    }
+
+    const modal = $("modal");
+    let modalMode = "login";
+
+    function setDuty(staff) {
+      document.body.dataset.duty = staff ? "staff" : "guest";
+      for (const element of document.querySelectorAll(".del, .duty-status, #change, #logout")) element.hidden = !staff;
+      $("login").hidden = staff;
+      document.querySelector(".guest-status").hidden = staff;
+    }
+
+    function openPassword(mode) {
+      const change = mode === "change";
+      modalMode = mode;
+      modal.returnValue = "";
+      $("modal-title").textContent = change ? "更改值班密碼" : "值班登入";
+      $("modal-desc").textContent = change ? "請輸入目前密碼與新密碼" : "新增與刪除紀錄需值班登入";
+      $("pw").placeholder = change ? "目前的密碼" : "值班密碼";
+      $("pw").setAttribute("aria-label", $("pw").placeholder);
+      $("pw-new").hidden = !change;
+      $("pw-new2").hidden = !change;
+      $("pw-ok").textContent = change ? "確認更改" : "登入";
+      modal.showModal();
+    }
+
+    $("change").addEventListener("click", () => openPassword("change"));
+    $("logout").addEventListener("click", () => {
+      setDuty(false);
+      $("login").focus();
+    });
+    $("login").addEventListener("click", () => openPassword("login"));
+    $("add").addEventListener("click", () => {
+      if (document.body.dataset.duty === "guest") openPassword("login");
+    });
+    modal.addEventListener("close", () => {
+      if (modalMode === "login" && modal.returnValue === "confirm") {
+        setDuty(true);
+        $("change").focus();
+      }
+    });
+  </script>
+</body>
+</html>
