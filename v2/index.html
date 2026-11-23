@@ -210,7 +210,7 @@ async function addLog(){
 async function delLog(id){
   const l=logs.find(x=>x.id===id);if(!l)return;
   if(!confirm('確定刪除這筆紀錄？\n'+taipeiTime(l.created_at)+'　'+shortName(l.from_name)+' → '+shortName(l.to_name)))return;
-  try{await rpc('t995_transfer_delete',{p_password:getPw(),p_id:id});$('log-msg').textContent='已刪除';await loadLogs();}
+  try{await rpc('t995_transfer_delete',{p_password:getPw(),p_id:id});await loadLogs();$('log-msg').textContent='已刪除';}
   catch(e){if(e.bad){setPw('');renderDuty();renderLogs();$('log-msg').textContent='值班密碼已變更，請重新登入';}else $('log-msg').textContent='刪除失敗，請稍後再試';}
 }
 function summaryText(){
